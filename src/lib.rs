@@ -183,7 +183,7 @@ pub fn extract_u64(source: u64, start: usize, length: usize) -> Result<u64, (Str
 /// - **length** (usize) the number of bits to be extracted.
 pub fn extract_i8(source: u8, start: usize, length: usize) -> Result<i8, (String)> {
   // Check if the desired range is valid
-  let size = mem::size_of::<u8>() * 8;
+  let size = mem::size_of::<i8>() * 8;
   if start + length > size {
     return Err("Error while extracting bits: Out of range".to_string());
   }
@@ -214,7 +214,7 @@ pub fn extract_i8(source: u8, start: usize, length: usize) -> Result<i8, (String
 /// - **length** (usize) the number of bits to be extracted.
 pub fn extract_i16(source: u16, start: usize, length: usize) -> Result<i16, (String)> {
   // Check if the desired range is valid
-  let size = mem::size_of::<u16>() * 8;
+  let size = mem::size_of::<i16>() * 8;
   if start + length > size {
     return Err("Error while extracting bits: Out of range".to_string());
   }
@@ -246,7 +246,7 @@ pub fn extract_i16(source: u16, start: usize, length: usize) -> Result<i16, (Str
 /// - **length** (usize) the number of bits to be extracted.
 pub fn extract_i32(source: u32, start: usize, length: usize) -> Result<i32, (String)> {
   // Check if the desired range is valid
-  let size = mem::size_of::<u32>() * 8;
+  let size = mem::size_of::<i32>() * 8;
   if start + length > size {
     return Err("Error while extracting bits: Out of range".to_string());
   }
@@ -278,7 +278,7 @@ pub fn extract_i32(source: u32, start: usize, length: usize) -> Result<i32, (Str
 /// - **length** (usize) the number of bits to be extracted.
 pub fn extract_i64(source: u64, start: usize, length: usize) -> Result<i64, (String)> {
   // Check if the desired range is valid
-  let size = mem::size_of::<u64>() * 8;
+  let size = mem::size_of::<i64>() * 8;
   if start + length > size {
     return Err("Error while extracting bits: Out of range".to_string());
   }
@@ -296,38 +296,191 @@ pub fn extract_i64(source: u64, start: usize, length: usize) -> Result<i64, (Str
   Ok(copy)
 }
  
+/// Extracts a range of bits from a Vec<u8> and returns a Result object containing an 8 bit unsigned integer.
+///
+/// On success, the Result contains the desired value 
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(i64))
+///
+/// Parameters:
+///
+/// - **source** a vector of u8, which is the source of data  
+/// - **byte_offset** (usize) the number of bytes to skip in source
+/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
+/// - **length** (usize) the number of bits to be extracted.
+pub fn u8(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u8, String> {
+	let err1 = String::from("Out of range");
+	let size = bit_offset + length;
+	if size <= 8 { // Ensure that we stay within the range
+	 	if source.len() > byte_offset {
+	 		let mut copy: u8 = unsafe { mem::transmute_copy(&source[byte_offset]) };
+		  // Lets clear the bits on both sides of the range of bits of interest
+		  // First clear the ones on the left side
+	 		copy <<= bit_offset;
+	 		// Second, push it all to the right end
+	 		copy >>= 8 - length;
+	 		return Ok(copy);
+	 	} else {
+	 		return Err(err1)
+	 	}
+	} else {
+ 		return Err(err1)
+	}
+}
+
+/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer.
+///
+/// On success, the Result contains the desired value 
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(i64))
+///
+/// Parameters:
+///
+/// - **source** a vector of u8, which is the source of data  
+/// - **byte_offset** (usize) the number of bytes to skip in source
+/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
+/// - **length** (usize) the number of bits to be extracted.
+pub fn u16(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u16, String> {
+	let err1 = String::from("Out of range");
+	let size = bit_offset + length;
+	if size <= 16 {
+	 	if source.len() > byte_offset + 1 { // Ensure that we stay within the range
+	 		let mut copy: u16 = unsafe { mem::transmute_copy(&source[byte_offset]) };
+	 		// Assume that the data is given in big endian and
+	 		// convert it to whatever endiannes we have on the users machine
+	 		copy = u16::from_be(copy);
+		  // Lets clear the bits on both sides of the range of bits of interest
+		  // First clear the ones on the left side
+	 		copy <<= bit_offset;
+	 		// Second, push it all to the right end
+	 		copy >>= 16 - length;
+	 		return Ok(copy);
+	 	} else {
+	 		return Err(err1)
+	 	}
+	} else {
+ 		return Err(err1)
+	}
+}
+/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer.
+///
+/// On success, the Result contains the desired value 
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(i64))
+///
+/// Parameters:
+///
+/// - **source** a vector of u8, which is the source of data  
+/// - **byte_offset** (usize) the number of bytes to skip in source
+/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
+/// - **length** (usize) the number of bits to be extracted.
+
+pub fn u32(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u32, String> {
+	let err1 = String::from("Out of range");
+	let size = bit_offset + length;
+	if size <= 32 {
+	 	if source.len() > byte_offset + 3 { // Ensure that we stay within the range
+	 		let mut copy: u32 = unsafe { mem::transmute_copy(&source[byte_offset]) };
+	 		// Assume that the data is given in big endian and
+	 		// convert it to whatever endiannes we have on the users machine
+	 		copy = u32::from_be(copy);
+		  // Lets clear the bits on both sides of the range of bits of interest
+		  // First clear the ones on the left side
+	 		copy <<= bit_offset;
+	 		// Second, push it all to the right end
+	 		copy >>= 32 - length;
+	 		return Ok(copy);
+	 	} else {
+	 		return Err(err1)
+	 	}
+	} else {
+ 		return Err(err1)
+	}
+}
+/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 64 bit unsigned integer.
+///
+/// On success, the Result contains the desired value 
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(i64))
+///
+/// Parameters:
+///
+/// - **source** a vector of u8, which is the source of data  
+/// - **byte_offset** (usize) the number of bytes to skip in source
+/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
+/// - **length** (usize) the number of bits to be extracted.
+
+pub fn u64(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u64, String> {
+	let err1 = String::from("Out of range");
+	let size = bit_offset + length;
+	if size <= 64 {
+	 	if source.len() > byte_offset + 7 { // Ensure that we stay within the range
+	 		let mut copy: u64 = unsafe { mem::transmute_copy(&source[byte_offset]) };
+	 		// Assume that the data is given in big endian and
+	 		// convert it to whatever endiannes we have on the users machine
+	 		copy = u64::from_be(copy);
+		  // Lets clear the bits on both sides of the range of bits of interest
+		  // First clear the ones on the left side
+	 		copy <<= bit_offset;
+	 		// Second, push it all to the right end
+	 		copy >>= 64 - length;
+	 		return Ok(copy);
+	 	} else {
+	 		return Err(err1)
+	 	}
+	} else {
+ 		return Err(err1)
+	}
+}
+
+// TOOD: Implement 4 more functions for the signed integers
+
 #[cfg(test)]
 mod tests {
   use super::*;
  
   #[test]
-  fn test_extract() {
+  fn primitive_extract() {
     let a: u8 = 0b0000_0101;
     let b = extract_u8(a, 7, 1).unwrap();
     assert_eq!(b, 1);
  
-    let c = 0xFF;
-    let b = extract_u8(c, 5, 3).unwrap();
+    let a = 0xFF;
+    let b = extract_u8(a, 5, 3).unwrap();
     assert_eq!(b, 7);
  
-    let d = 0xFF_FF_FF_FFu32;
-    let b = extract_u32(d, 5, 3).unwrap();
+    let a = 0xFF_FF_FF_FFu32;
+    let b = extract_u32(a, 5, 3).unwrap();
     assert_eq!(b, 7);
  
-    let e = 0xFF_FF_FF_FFu32;
-    let b = extract_i32(e, 0, 2).unwrap();
+    let a= 0xFF_FF_FF_FFu32;
+    let b = extract_i32(a, 0, 2).unwrap();
     assert_eq!(b, -1);
  
-    let f = 0x7F_FF_FF_FFu32;
-    let b = extract_i32(f, 0, 3).unwrap();
+    let a = 0x7F_FF_FF_FFu32;
+    let b = extract_i32(a, 0, 3).unwrap();
     assert_eq!(b, 3);
  
-    let g = 0xFF_FF_FF_7Fu32;
-    let b = extract_i32(g, 24, 3).unwrap();
+    let a = 0xFF_FF_FF_7Fu32;
+    let b = extract_i32(a, 24, 3).unwrap();
     assert_eq!(b, 3);
  
-    let h = 0xFF_FF_FF_FF_FF_FF_FF_7Fu64;
-    let b = extract_i64(h, 56, 3).unwrap();
+    let a = 0xFF_FF_FF_FF_FF_FF_FF_7Fu64;
+    let b = extract_i64(a, 56, 3).unwrap();
     assert_eq!(b, 3);
+  }
+
+  #[test]
+  fn extract_from_vector() {
+  	let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
+		let bar = u16(&v, 1, 7, 3);
+		assert_eq!(bar.unwrap(), 5);
+
+
+		// TODO: More test cases
   }
 }
