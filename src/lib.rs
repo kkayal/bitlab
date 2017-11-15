@@ -346,7 +346,7 @@ pub fn u16(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	let err1 = String::from("Out of range");
 	let size = bit_offset + length;
 	if size <= 16 {
-	 	if source.len() > byte_offset + 1 { // Ensure that we stay within the range
+	 	if source.len() >= byte_offset + 2 { // Ensure that we stay within the range
 	 		let mut copy: u16 = unsafe { mem::transmute_copy(&source[byte_offset]) };
 	 		// Assume that the data is given in big endian and
 	 		// convert it to whatever endiannes we have on the users machine
@@ -382,7 +382,7 @@ pub fn u32(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	let err1 = String::from("Out of range");
 	let size = bit_offset + length;
 	if size <= 32 {
-	 	if source.len() > byte_offset + 3 { // Ensure that we stay within the range
+	 	if source.len() >= byte_offset + 4 { // Ensure that we stay within the range
 	 		let mut copy: u32 = unsafe { mem::transmute_copy(&source[byte_offset]) };
 	 		// Assume that the data is given in big endian and
 	 		// convert it to whatever endiannes we have on the users machine
@@ -418,7 +418,7 @@ pub fn u64(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	let err1 = String::from("Out of range");
 	let size = bit_offset + length;
 	if size <= 64 {
-	 	if source.len() > byte_offset + 7 { // Ensure that we stay within the range
+	 	if source.len() >= byte_offset + 8 { // Ensure that we stay within the range
 	 		let mut copy: u64 = unsafe { mem::transmute_copy(&source[byte_offset]) };
 	 		// Assume that the data is given in big endian and
 	 		// convert it to whatever endiannes we have on the users machine
@@ -457,10 +457,18 @@ mod tests {
     let b = extract_u32(a, 5, 3).unwrap();
     assert_eq!(b, 7);
  
-    let a= 0xFF_FF_FF_FFu32;
+    let a = 0xFF_FF_FF_00u32;
     let b = extract_i32(a, 0, 2).unwrap();
     assert_eq!(b, -1);
+    let c: i32 = -1;
+    assert_eq!(b, c);
  
+    let a: i16 = -3755; // = 0xF155 = 0b1111_0001_0101_0101
+    let b = extract_i16(a as u16, 0, 4).unwrap();
+    assert_eq!(b, -1);
+    let b = extract_u16(a as u16, 0, 4).unwrap();
+    assert_eq!(b, 15);
+
     let a = 0x7F_FF_FF_FFu32;
     let b = extract_i32(a, 0, 3).unwrap();
     assert_eq!(b, 3);
@@ -476,11 +484,39 @@ mod tests {
 
   #[test]
   fn extract_from_vector() {
-  	let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
-		let bar = u16(&v, 1, 7, 3);
+  	let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
+		let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x6161 = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
+		// Test integrity
+		// This is still allowed
+		let bar = u16(&v, 1, 7, 9); // relevant bytes = 0x6161 = 0b0110000  --> 101 <-- 101100
+		assert_eq!(bar.unwrap(), 364);
+
+		// One more bit and we are out of the game..
+		match u16(&v, 1, 7, 10) {
+		    Ok(_) => panic!("Nooo, this should have failed!"),
+		    Err(e) => assert_eq!(e, "Out of range"),
+		}
+
+		// Check that at the end of teh vector
+		match u16(&v, 4, 7, 10) {
+		    Ok(_) => panic!("Nooo, this should have failed!"),
+		    Err(e) => assert_eq!(e, "Out of range"),
+		}
+
+		// Check that at the end of teh vector (max valid byte_offset == 4)
+		match u16(&v, 5, 2, 3) {
+		    Ok(_) => panic!("Nooo, this should have failed!"),
+		    Err(e) => assert_eq!(e, "Out of range"),
+		}
 
 		// TODO: More test cases
   }
+
+	#[test]
+	#[should_panic]
+	fn test_panic() {
+		panic!("So far nothing that should panic!");
+	}
 }
