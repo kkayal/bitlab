@@ -33,7 +33,7 @@
 //! ```rust
 //! use bitlab::*;
 //! let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
-//! let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x6161 = 0b0110000  --> 101 <-- 101100
+//! let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 //! assert_eq!(bar.unwrap(), 5);
 //! ```
 //!
@@ -498,12 +498,12 @@ mod tests {
   #[test]
   fn extract_from_vector() {
   	let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
-		let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x6161 = 0b0110000  --> 101 <-- 101100
+		let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
 		// Test integrity
 		// This is still allowed
-		let bar = u16(&v, 1, 7, 9); // relevant bytes = 0x6161 = 0b0110000  --> 101 <-- 101100
+		let bar = u16(&v, 1, 7, 9); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 364);
 
 		// One more bit and we are out of the game..
