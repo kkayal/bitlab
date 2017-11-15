@@ -1,7 +1,7 @@
 [![Travis Build Status](https://api.travis-ci.org/kkayal/bitlab.svg?branch=master)](https://travis-ci.org/kkayal/bitlab)
 
 # bitlab
-Extracting a range of bits  from binary data
+Extracting a range of bits from binary data
 
 # Objective:
 
@@ -13,7 +13,7 @@ Experimental
 
 # Version
 
-0.0.2
+0.0.3
 
 # Examples
 
