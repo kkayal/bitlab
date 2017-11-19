@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.0.3
+//! 0.1.0
 //!
 //! # Examples
 //!
@@ -20,9 +20,9 @@
 //!
 //! ```rust
 //! use bitlab::*;
-//! let c = 0xFFu8;
-//! let b = extract_u8(c, 5, 3).unwrap();
-//! assert_eq!(b, 7);
+//! let a = 0xFFu8;
+//! let b = a.get_u8(5, 3).unwrap();
+//! //assert_eq!(b, 7);
 //! ```
 //! 
 //! ## Example 2: 
@@ -31,9 +31,8 @@
 //! bit offset 7 and starting from there extract 3 bits as an u16
 //! 
 //! ```rust
-//! use bitlab::*;
 //! let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
-//! let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
+//! let bar = bitlab::u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 //! assert_eq!(bar.unwrap(), 5);
 //! ```
 //!
@@ -54,260 +53,6 @@
 	html_root_url = "https://doc.rust-lang.org/")]
 
 use std::mem;
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
-///
-/// Parameters:
-///
-/// - **source** (u8) an 8 bit unsigned integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_u8(source: u8, start: usize, length: usize) -> Result<u8, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<u8>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u16))
-///
-/// Parameters:
-///
-/// - **source** (u16) an 16 bit unsigned integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_u16(source: u16, start: usize, length: usize) -> Result<u16, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<u16>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u32))
-///
-/// Parameters:
-///
-/// - **source** (u32) a 32 bit unsigned integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_u32(source: u32, start: usize, length: usize) -> Result<u32, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<u32>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u64))
-///
-/// Parameters:
-///
-/// - **source** (u64) a 64 bit unsigned integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted. 
-pub fn extract_u64(source: u64, start: usize, length: usize) -> Result<u64, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<u64>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(i8))
-///
-/// Parameters:
-///
-/// - **source** (i8) an 8 bit signed integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_i8(source: u8, start: usize, length: usize) -> Result<i8, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<i8>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source as i8;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u16))
-///
-/// Parameters:
-///
-/// - **source** (i16) a 16 bit signed integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_i16(source: u16, start: usize, length: usize) -> Result<i16, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<i16>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source as i16;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(i32))
-///
-/// Parameters:
-///
-/// - **source** (i32) an 32 bit signed integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_i32(source: u32, start: usize, length: usize) -> Result<i32, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<i32>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source as i32;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
-
-/// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value 
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(i64))
-///
-/// Parameters:
-///
-/// - **source** (i64) an 64 bit signed integer, which is the source of data  
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-pub fn extract_i64(source: u64, start: usize, length: usize) -> Result<i64, (String)> {
-  // Check if the desired range is valid
-  let size = mem::size_of::<i64>() * 8;
-  if start + length > size {
-  	return Err("Error while extracting bits: Out of range".to_string());
-  }
-
-  let mut copy = source as i64;
-
-  // Lets clear the bits on both sides of the range of bits of interest
-  // First clear the ones on the left side
-  copy <<= start;
-
-  // Second, push it all to the right end
-  copy >>= size - length;
-
-  // Return the result
-  Ok(copy)
-}
 
 /// Extracts a range of bits from a Vec<u8> and returns a Result object containing an 8 bit unsigned integer.
 ///
@@ -450,174 +195,665 @@ pub fn u64(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	 }
 	}
 
-// TOOD: Implement 4 more functions for the signed integers
+/// Defines a number of functions, which extract a range of bits from
+/// primitive numeric types (u8, u16, u32 and u64) and return
+/// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
+/// E.g. the get_u8(5,3) function extracts the bits 5,6 and 7 of
+/// the variable a and returns the result as a u8 variable
+	pub trait ExtractBitsFromIntegralTypes {
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **u8**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)>;
 
-// TDOD: Implement a macro
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **u16**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)>;
 
-/*
-macro_rules! foo {
-  ($source:expr, $start:expr, $length:expr => u8) => (extract_u8($source, $start, $length));
-  ($source:expr, $start:expr, $length:expr => i8) => (extract_i8($source, $start, $length));
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **u32**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)>;
+
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **u64**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)>;
+
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **i8**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)>;
+
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **i16**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)>;
+
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **i32**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)>;
+
+/// Extracts a range of bits and returns a Result object.
+///
+/// On success, the Result contains the desired value as a **i64**
+///
+/// On error, the Result contains an error message.
+/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+///
+/// Parameters:
+///
+/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+/// - **length** (usize) the number of bits to be extracted.
+		fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)>;
+	}
+
+impl ExtractBitsFromIntegralTypes for u8 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		// Check if the desired range is valid
+		if start + length > 8 {
+			return Err("Out of range".to_string());
+		}
+
+		// Don't touch the original
+		let mut copy = *self;
+
+		// Lets clear the bits on both sides of the range of bits of interest
+		// First clear the ones on the left side
+		copy <<= start;
+
+		// Second, push it all to the right end
+		copy >>= 8 - length;
+
+		// Return the result
+		Ok(copy)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+	  // Check if the desired range is valid
+	  if start + length > 8 {
+	  	return Err("Out of range".to_string());
+	  }
+
+		// Don't touch the original
+		let mut copy = *self as i8;
+
+	  // Lets clear the bits on both sides of the range of bits of interest
+	  // First clear the ones on the left side
+	  copy <<= start;
+
+	  // Second, push it all to the right end
+	  copy >>= 8 - length;
+
+	  // Return the result
+	  Ok(copy as i8)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		let copy = self.get_u8(start, length)?;
+		Ok(copy as u16)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		let copy = self.get_i8(start, length)?;
+		Ok(copy as i16)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		let copy = self.get_u8(start, length)?;
+		Ok(copy as u32)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		let copy = self.get_i8(start, length)?;
+		Ok(copy as i32)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		let copy = self.get_u8(start, length)?;
+		Ok(copy as u64)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		let copy = self.get_i8(start, length)?;
+		Ok(copy as i64)
+	}
 }
-*/
 
-#[macro_export]
-macro_rules! foo {
-	($source:expr, $start:expr, $length:expr => $T:ty) => ({
-      // Check if the desired range is valid
-      let size = mem::size_of_val(&$source) * 8;
-      if $start + $length > size {
-      	Err("The bit range doesn't fit into the input ..".to_string())
-      } else if $length > mem::size_of::<$T>() * 8 {
-      	Err("Length is longer than the size of a ".to_string() + stringify!($T))
-      } else {
-	      let mut copy = $source;
+impl ExtractBitsFromIntegralTypes for u16 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a u8".to_string());
+		}
 
-	      // Lets clear the bits on both sides of the range of bits of interest
-	      // First clear the ones on the left side
-	      // Thsi will inserts zeros from the right hand side no matter we have a
-	      // signed or unsigned int (TODO: Confirm this with a test)
-	      copy <<= $start;
-println!("copy = {:?}", copy);
-	      // Adapt the variable type, but keep the size >= the input See below
+		// Return the result
+		Ok(self.get_u16(start, length)? as u8)
+	}
 
-	      // Now we have to adapt the variale type.
-	      // if the new type is smaller than the source, some of the most significant bits
-	      // will be lost in the process. But we start our bit counting at the
-	      // most significant side. Therefore,let's move all bits to the right side, before we convert, so that
-	      // none of the bits in our range gets lost.
-	      let diff: isize = mem::size_of_val(&$source) as isize - mem::size_of::<$T>() as isize;
-	      if diff > 0 {
-	      	copy >>= diff * 8;
-	      }
-println!("copy = {:?}", copy);
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a i8".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_i16(start, length)? as i8)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		// Check if the desired range is valid
+		if start + length > 16 {
+			return Err("Out of range".to_string());
+		}
+
+		// Don't touch the original
+		let mut copy = *self;
+
+		// Lets clear the bits on both sides of the range of bits of interest
+		// First clear the ones on the left side
+		copy <<= start;
+
+		// Second, push it all to the right end
+		copy >>= 16 - length;
+
+		// Return the result
+		Ok(copy)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+	  // Check if the desired range is valid
+	  if start + length > 16 {
+	  	return Err("Error while extracting bits: Out of range".to_string());
+	  }
+
+		// Don't touch the original
+		let mut copy = *self as i16;
+
+	  // Lets clear the bits on both sides of the range of bits of interest
+	  // First clear the ones on the left side
+	  copy <<= start;
+
+	  // Second, push it all to the right end
+	  copy >>= 16 - length;
+
+	  // Return the result
+	  Ok(copy as i16)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		let copy = self.get_u16(start, length)?;
+		Ok(copy as u32)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		let copy = self.get_i16(start, length)?;
+		Ok(copy as i32)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		let copy = self.get_u16(start, length)?;
+		Ok(copy as u64)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		let copy = self.get_i16(start, length)?;
+		Ok(copy as i64)
+	}
+}
 
 
-//
-// If copy : u8 is = A8 (=168) and I convert it to i16, the new value is NOT negative!!!
-//
+impl ExtractBitsFromIntegralTypes for u32 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a u8".to_string());
+		}
 
-				let mut copy2 = copy  as $T;	// Note that the new type might be smaller than the old one.
-println!("copy2 = {:?}", copy2);
+		// Return the result
+		Ok(self.get_u32(start, length)? as u8)
+	}
 
-	      // Second, push it all to the right end.
-	      // If copy2 is an unsigned int, this will insert zeros from the left side.
-	      // If copy2 is a signed int, this will insert ones from the left side.
-	      if diff > 0 {
-	      	copy2 >>= (mem::size_of::<$T>() * 8) - $length;
-	    	} else {
-	    		copy2 >>= (mem::size_of_val(&$source) * 8) - $length;
-	    	}
-println!("copy3 = {:?}", copy2);
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a i8".to_string());
+		}
 
-	      // Return the result
-	      Ok(copy2)
-    	}
-    }
-)}
+		// Return the result
+		Ok(self.get_i32(start, length)? as i8)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		if length > 16 {
+			return Err("The length parameter is too big for a u16".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_u32(start, length)? as u16)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		if length > 16 {
+			return Err("The length parameter is too big for a i16".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_u32(start, length)? as i16)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		// Check if the desired range is valid
+		if start + length > 32 {
+			return Err("Out of range".to_string());
+		}
+
+		// Don't touch the original
+		let mut copy = *self;
+
+		// Lets clear the bits on both sides of the range of bits of interest
+		// First clear the ones on the left side
+		copy <<= start;
+
+		// Second, push it all to the right end
+		copy >>= 32 - length;
+
+		// Return the result
+		Ok(copy)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+	  // Check if the desired range is valid
+	  if start + length > 32 {
+	  	return Err("Out of range".to_string());
+	  }
+
+		// Don't touch the original
+		let mut copy = *self as i32;
+
+	  // Lets clear the bits on both sides of the range of bits of interest
+	  // First clear the ones on the left side
+	  copy <<= start;
+
+	  // Second, push it all to the right end
+	  copy >>= 32 - length;
+
+	  // Return the result
+	  Ok(copy as i32)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		let copy = self.get_u32(start, length)?;
+		Ok(copy as u64)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		let copy = self.get_i32(start, length)?;
+		Ok(copy as i64)
+	}
+}
+
+impl ExtractBitsFromIntegralTypes for u64 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a u8".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_u64(start, length)? as u8)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		if length > 8 {
+			return Err("The length parameter is too big for a i8".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_i64(start, length)? as i8)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		if length > 16 {
+			return Err("The length parameter is too big for a u16".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_u64(start, length)? as u16)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		if length > 16 {
+			return Err("The length parameter is too big for a i16".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_i64(start, length)? as i16)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		if length > 32 {
+			return Err("The length parameter is too big for a u32".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_u64(start, length)? as u32)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		if length > 32 {
+			return Err("The length parameter is too big for a i32".to_string());
+		}
+
+		// Return the result
+		Ok(self.get_i64(start, length)? as i32)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		// Check if the desired range is valid
+		if start + length > 64 {
+			return Err("Out of range".to_string());
+		}
+
+		// Don't touch the original
+		let mut copy = *self;
+
+		// Lets clear the bits on both sides of the range of bits of interest
+		// First clear the ones on the left side
+		copy <<= start;
+
+		// Second, push it all to the right end
+		copy >>= 64 - length;
+
+		// Return the result
+		Ok(copy)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+	  // Check if the desired range is valid
+	  if start + length > 64 {
+	  	return Err("Error while extracting bits: Out of range".to_string());
+	  }
+
+		// Don't touch the original
+		let mut copy = *self as i64;
+
+	  // Lets clear the bits on both sides of the range of bits of interest
+	  // First clear the ones on the left side
+	  copy <<= start;
+
+	  // Second, push it all to the right end
+	  copy >>= 64 - length;
+
+	  // Return the result
+	  Ok(copy as i64)
+	}
+}
+
 
 #[cfg(test)]
 mod tests {
 	use super::*;
 
 	#[test]
-	fn test_the_macro() {
-/*
-		// Simple example
+	fn extract_bits() {
+		//
+		// 8 bit input
+		//
+
+		// Same size unsigned
 		let a: u8 = 0b0000_0101;
-		let b = foo!(a, 5, 3 => u8).unwrap(); // extracted bits = 101
+		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
 
-		// Verify range error. 7 + 3 = 10 bits is bigger than a u8
-		match foo!(a, 7, 3 => u8) {
-			Ok(_) => panic!("Missed the range check"),	// We don't want this to happen
-			Err(e) => assert_eq!(e, "The bit range doesn't fit into the input ..".to_string()),		// We expect this one!
+		// Same size signed
+		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		// Range check for u8
+		match a.get_u8(5, 7) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
 		}
 
-		// Check negative numbers
-    let b = foo!(a, 5, 3 => i8).unwrap(); // extracted bits = 101
-    assert_eq!(b, -3);	// 0b101 as signed int -3
+		match a.get_u64(5, 7) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
+		}
 
-    // Make sure that we don't have big / little endian issues
-  	let a = 0x07_FF_FF_FFu32;
-  	let b = foo!(a, 5, 3 => u8).unwrap();
-  	assert_eq!(b, 7);
+		match a.get_u64(0, 9) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
+		}
 
-  	// Check larger var types
-  	let a = 0x07_FF_FF_FFu32;
-  	let b = foo!(a, 5, 3 => i16).unwrap();
-  	assert_eq!(b, -1);
+		// the type of the result is larger and unsigned
+		let b = a.get_u16(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-  	// Cross byte borders
-  	let a = 0x07_AAu16;
-  	let b = foo!(a, 5, 5 => u8).unwrap();
-  	assert_eq!(b, 30);
+		// the type of the result is larger and unsigned
+		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-  	// Cross byte borders and interpret as a signed int
-  	let a = 0x07_AA_FF_FFu32;
-  	let b = foo!(a, 5, 5 => i8).unwrap();
-  	assert_eq!(b, -2);
-*/
-/*
-  	// We should get the same result if the desired output variable type is larger than the source
-  	let a = 0x07_AA_FF_FFu32;
-  	let b = foo!(a, 5, 5 => i64).unwrap();
-  	assert_eq!(b, -2);
-*/
-  	// We should get the same result if the desired output variable type is larger than the source
-  	let a = 0xAAu8;
-  	let b = foo!(a, 2, 4 => i16).unwrap();
-  	assert_eq!(b, -6);
-  }
+		// the type of the result is larger and unsigned
+		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-  #[test]
-  fn primitive_extract() {
-  	let a: u8 = 0b0000_0101;
-  	let b = extract_u8(a, 7, 1).unwrap();
-  	assert_eq!(b, 1);
+		// the type of the result is larger and signed
+		let b = a.get_i16(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
 
-  	let a = 0xFF;
-  	let b = extract_u8(a, 5, 3).unwrap();
-  	assert_eq!(b, 7);
+		// the type of the result is larger and signed
+		let b = a.get_i32(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
 
-  	let a = 0xFF_FF_FF_FFu32;
-  	let b = extract_u32(a, 5, 3).unwrap();
-  	assert_eq!(b, 7);
+		// the type of the result is larger and signed
+		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
 
-  	let a = 0xFF_FF_FF_00u32;
-  	let b = extract_i32(a, 0, 2).unwrap();
-  	assert_eq!(b, -1);
-  	let c: i32 = -1;
-  	assert_eq!(b, c);
+		//
+		// 16 bit input
+		//
 
-    let a: i16 = -3755; // = 0xF155 = 0b1111_0001_0101_0101
-    let b = extract_i16(a as u16, 0, 4).unwrap();
-    assert_eq!(b, -1);
-    let b = extract_u16(a as u16, 0, 4).unwrap();
-    assert_eq!(b, 15);
+		let a: u16 = 0b0000_0101_1010_1010;
+		let b = a.get_u16(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-    let a = 0x7F_FF_FF_FFu32;
-    let b = extract_i32(a, 0, 3).unwrap();
-    assert_eq!(b, 3);
+		// the type of the result is smaller and unsigned. Pick a bit range on the left side
+		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-    let a = 0xFF_FF_FF_7Fu32;
-    let b = extract_i32(a, 24, 3).unwrap();
-    assert_eq!(b, 3);
+		// the type of the result is smaller and signed. Pick a bit range on the left side
+		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
 
-    let a = 0xFF_FF_FF_FF_FF_FF_FF_7Fu64;
-    let b = extract_i64(a, 56, 3).unwrap();
-    assert_eq!(b, 3);
-  }
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
-  #[test]
-  fn extract_from_vector() {
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(12, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		// the type of the result is larger and unsigned
+		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101. b is u32
+		assert_eq!(b, 5);
+
+		// the type of the result is larger and unsigned
+		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101. b is u64
+		assert_eq!(b, 5);
+
+		// the type of the result is larger and signed
+		let b = a.get_i32(5, 3).unwrap(); // extracted bits = 101. b is u32
+		assert_eq!(b, -3);
+
+		// the type of the result is larger and signed
+		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101. b is u64
+		assert_eq!(b, -3);
+
+		// Range check for u16
+		match a.get_u8(20, 7) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
+		}
+
+		// Range check for u16
+		match a.get_u8(0, 12) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+		}
+
+		//
+		// 32 bit input
+		//
+
+		let a: u32 = 0b0000_0101_1010_1010_1010_1010_1010_1010;
+		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the left side
+		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		// the type of the result is larger and unsigned
+		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101. b is u64
+		assert_eq!(b, 5);
+
+		// the type of the result is larger and signed
+		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101. b is i64
+		assert_eq!(b, -3);
+
+		// Range check for u32
+		match a.get_u32(20, 30) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
+		}
+
+		// Range check for u32
+		match a.get_u8(0, 12) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+		}
+
+		// Range check for u32
+		match a.get_u16(0, 18) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "The length parameter is too big for a u16"),
+		}
+
+		// Range check for u32
+		match a.get_u64(0, 70) {
+			Ok(_) => panic!("Missed the range check"),
+			Err(e) => assert_eq!(e, "Out of range"),
+		}
+
+		//
+		// 64 bit input
+		//
+
+		let a: u64 = 0b0000_0101_1010_1010_1010_1010_1010_1010_0000_0101_1010_1010_1010_1010_1010_1010;
+		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the left side
+		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		// the type of the result is smaller and signed. Pick a bit range on the left side
+		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(60, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = a.get_u8(60, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
+
+		//
+		// Testing signed input types
+		//
+
+		let a: i32 = -1;
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = (a as u32).get_i8(1, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -1);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = (a as u32).get_u8(1, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 7);
+	}
+
+	#[test]
+	fn extract_from_vector() {
   	let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
 		let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
 		// Test integrity
 		// This is still allowed
-		let bar = u16(&v, 1, 7, 9); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
+		let bar = u16(&v, 1, 7, 9);
 		assert_eq!(bar.unwrap(), 364);
 
 		// One more bit and we are out of the game..
