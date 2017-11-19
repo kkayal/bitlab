@@ -17,13 +17,13 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.1.0
+0.1.1
 
 # Installation
 
 Just add the following line under [dependencies] to your Cargo.toml file
 
-    bitlab = "0.1.0"
+    bitlab = "0.1.1"
 
 # Examples
 
@@ -33,8 +33,8 @@ To extract 3 bits starting at bit index 5 within a byte (0xFF) and interpret the
 
 ```rust
 use bitlab::*;
-let c = 0xFFu8;
-let b = extract_u8(c, 5, 3).unwrap();
+let a = 0xFFu8;
+let b = a.get_u8(5, 3).unwrap();
 assert_eq!(b, 7);
 ```
 
