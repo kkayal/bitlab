@@ -23,7 +23,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 Just add the following line under [dependencies] to your Cargo.toml file
 
-    bitlab = "0.0.3"
+    bitlab = "0.1.0"
 
 # Examples
 
