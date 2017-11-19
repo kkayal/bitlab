@@ -17,7 +17,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.0.4
+0.1.0
 
 # Installation
 

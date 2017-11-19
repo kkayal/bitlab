@@ -378,6 +378,40 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 }
 
+impl ExtractBitsFromIntegralTypes for i8 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		(*self as u8).get_u8(start, length)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		(*self as u8).get_i8(start, length)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		(*self as u8).get_u16(start, length)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		(*self as u8).get_i16(start, length)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		(*self as u8).get_u32(start, length)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		(*self as u8).get_i32(start, length)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		(*self as u8).get_u64(start, length)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		(*self as u8).get_i64(start, length)
+	}
+}
+
 impl ExtractBitsFromIntegralTypes for u16 {
 	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
 		if length > 8 {
@@ -458,6 +492,40 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 }
 
+
+impl ExtractBitsFromIntegralTypes for i16 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		(*self as u16).get_u8(start, length)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		(*self as u16).get_i8(start, length)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		(*self as u16).get_u16(start, length)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		(*self as u16).get_i16(start, length)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		(*self as u16).get_u32(start, length)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		(*self as u16).get_i32(start, length)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		(*self as u16).get_u64(start, length)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		(*self as u16).get_i64(start, length)
+	}
+}
 
 impl ExtractBitsFromIntegralTypes for u32 {
 	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
@@ -544,6 +612,40 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
 		let copy = self.get_i32(start, length)?;
 		Ok(copy as i64)
+	}
+}
+
+impl ExtractBitsFromIntegralTypes for i32 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		(*self as u32).get_u8(start, length)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		(*self as u32).get_i8(start, length)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		(*self as u32).get_u16(start, length)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		(*self as u32).get_i16(start, length)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		(*self as u32).get_u32(start, length)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		(*self as u32).get_i32(start, length)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		(*self as u32).get_u64(start, length)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		(*self as u32).get_i64(start, length)
 	}
 }
 
@@ -643,6 +745,39 @@ impl ExtractBitsFromIntegralTypes for u64 {
 	}
 }
 
+impl ExtractBitsFromIntegralTypes for i64 {
+	fn get_u8(&self, start: usize, length: usize) -> Result<u8, (String)> {
+		(*self as u64).get_u8(start, length)
+	}
+
+	fn get_i8(&self, start: usize, length: usize) -> Result<i8, (String)> {
+		(*self as u64).get_i8(start, length)
+	}
+
+	fn get_u16(&self, start: usize, length: usize) -> Result<u16, (String)> {
+		(*self as u64).get_u16(start, length)
+	}
+
+	fn get_i16(&self, start: usize, length: usize) -> Result<i16, (String)> {
+		(*self as u64).get_i16(start, length)
+	}
+
+	fn get_u32(&self, start: usize, length: usize) -> Result<u32, (String)> {
+		(*self as u64).get_u32(start, length)
+	}
+
+	fn get_i32(&self, start: usize, length: usize) -> Result<i32, (String)> {
+		(*self as u64).get_i32(start, length)
+	}
+
+	fn get_u64(&self, start: usize, length: usize) -> Result<u64, (String)> {
+		(*self as u64).get_u64(start, length)
+	}
+
+	fn get_i64(&self, start: usize, length: usize) -> Result<i64, (String)> {
+		(*self as u64).get_i64(start, length)
+	}
+}
 
 #[cfg(test)]
 mod tests {
@@ -837,12 +972,14 @@ mod tests {
 
 		let a: i32 = -1;
 		// the type of the result is smaller and signed. Pick a bit range on the right side
-		let b = (a as u32).get_i8(1, 3).unwrap(); // extracted bits = 101
+		let b = a.get_i8(1, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, -1);
 
 		// the type of the result is smaller and unsigned. Pick a bit range on the right side
-		let b = (a as u32).get_u8(1, 3).unwrap(); // extracted bits = 101
+		let b = a.get_u8(1, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 7);
+
+		// TODO: Add systematic test cases for signed integers as source of data
 	}
 
 	#[test]
