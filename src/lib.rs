@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.1.1
+//! 0.1.2
 //!
 //! # Examples
 //!
@@ -122,6 +122,7 @@ pub fn u16(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	 	return Err(err1)
 	 }
 	}
+
 /// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer.
 ///
 /// On success, the Result contains the desired value 
@@ -135,7 +136,6 @@ pub fn u16(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 /// - **byte_offset** (usize) the number of bytes to skip in source
 /// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 /// - **length** (usize) the number of bits to be extracted.
-
 pub fn u32(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u32, String> {
 	let err1 = String::from("Out of range");
 	let size = bit_offset + length;
@@ -158,6 +158,7 @@ pub fn u32(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	 	return Err(err1)
 	 }
 	}
+
 /// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 64 bit unsigned integer.
 ///
 /// On success, the Result contains the desired value 
@@ -171,7 +172,6 @@ pub fn u32(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 /// - **byte_offset** (usize) the number of bytes to skip in source
 /// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 /// - **length** (usize) the number of bits to be extracted.
-
 pub fn u64(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u64, String> {
 	let err1 = String::from("Out of range");
 	let size = bit_offset + length;
@@ -196,7 +196,7 @@ pub fn u64(source: &Vec<u8>, byte_offset: usize, bit_offset: usize, length: usiz
 	}
 
 /// Defines a number of functions, which extract a range of bits from
-/// primitive numeric types (u8, u16, u32 and u64) and return
+/// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
 /// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
 /// E.g. the get_u8(5,3) function extracts the bits 5,6 and 7 of
 /// the variable a and returns the result as a u8 variable
