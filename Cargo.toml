@@ -1,6 +1,6 @@
 [package]
 name = "bitlab"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Kağan Kayal"]
 description = "Extracting a range of bits from binary data"
 documentation = "https://docs.rs/bitlab/"
@@ -14,5 +14,9 @@ license = "MIT"
 [badges]
 travis-ci = { repository = "kkayal/bitlab", branch = "master" }
 maintenance = { status = "experimental" }
+
+[[bin]]
+name = "mytest"
+path = "src/performanceTest.rs"
 
 [dependencies]

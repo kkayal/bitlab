@@ -17,13 +17,13 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.1.3
+0.1.4
 
 # Installation
 
 Just add the following line under [dependencies] to your Cargo.toml file
 
-    bitlab = "0.1.3"
+    bitlab = "0.1.4"
 
 # Examples
 

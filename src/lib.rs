@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.1.3
+//! 0.1.4
 //!
 //! # Examples
 //!
@@ -25,7 +25,7 @@
 //! //assert_eq!(b, 7);
 //! ```
 //! 
-//! ## Example 2: 
+//! ## Example 2:
 //! 
 //! The data source is a vector of u8 types. We want to go to byte offset 1, 
 //! bit offset 7 and starting from there extract 3 bits as an u16
