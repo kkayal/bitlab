@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.1.2
+//! 0.1.3
 //!
 //! # Examples
 //!
@@ -972,12 +972,16 @@ mod tests {
 
 		let a: i32 = -1;
 		// the type of the result is smaller and signed. Pick a bit range on the right side
-		let b = a.get_i8(1, 3).unwrap(); // extracted bits = 101
+		let b = a.get_i8(1, 3).unwrap(); // extracted bits = 111
 		assert_eq!(b, -1);
 
 		// the type of the result is smaller and unsigned. Pick a bit range on the right side
-		let b = a.get_u8(1, 3).unwrap(); // extracted bits = 101
+		let b = a.get_u8(1, 3).unwrap(); // extracted bits = 111
 		assert_eq!(b, 7);
+
+		let a: i64 = 0b0000_0101_1010_1010_1010_1010_1010_1010_0000_0101_1010_1010_1010_1010_1010_1010;
+		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, 5);
 
 		// TODO: Add systematic test cases for signed integers as source of data
 	}
