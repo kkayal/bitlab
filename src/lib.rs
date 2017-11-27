@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.2.0
+//! 0.2.1
 //!
 //! # Examples
 //!
@@ -60,7 +60,7 @@ use std::mem;
 /// Defines a number of functions, which extract a range of bits from
 /// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
 /// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
-/// E.g. the get_u8(5,3) function extracts the bits 5,6 and 7 of
+/// E.g. the a.get_u8(5,3) function extracts the bits 5,6 and 7 of
 /// the variable a and returns the result as a u8 variable
 pub trait ExtractBitsFromIntegralTypes {
 /// Extracts a range of bits and returns a Result object.
@@ -68,7 +68,7 @@ pub trait ExtractBitsFromIntegralTypes {
 /// On success, the Result contains the desired value as a **u8**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 8)
 ///
 /// Parameters:
 ///
@@ -81,7 +81,7 @@ fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)>;
 /// On success, the Result contains the desired value as a **u16**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 16)
 ///
 /// Parameters:
 ///
@@ -94,7 +94,7 @@ fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)>;
 /// On success, the Result contains the desired value as a **u32**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 32)
 ///
 /// Parameters:
 ///
@@ -107,7 +107,7 @@ fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)>;
 /// On success, the Result contains the desired value as a **u64**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 64)
 ///
 /// Parameters:
 ///
@@ -120,7 +120,7 @@ fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)>;
 /// On success, the Result contains the desired value as a **i8**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 8)
 ///
 /// Parameters:
 ///
@@ -133,7 +133,7 @@ fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)>;
 /// On success, the Result contains the desired value as a **i16**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 16)
 ///
 /// Parameters:
 ///
@@ -146,7 +146,7 @@ fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)>;
 /// On success, the Result contains the desired value as a **i32**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 32)
 ///
 /// Parameters:
 ///
@@ -159,7 +159,7 @@ fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)>;
 /// On success, the Result contains the desired value as a **i64**
 ///
 /// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source  (start + length > sizeof(u8))
+/// This may happen if the range is larger than the data source (start + length > 64)
 ///
 /// Parameters:
 ///

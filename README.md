@@ -17,25 +17,26 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.2.0
+0.2.1
 
 # Installation
 
 Just add the following line under [dependencies] to your Cargo.toml file
 
-    bitlab = "0.2.0"
+    bitlab = "0.2.1"
 
 # Examples
 
 ## Example 1: 
 
-To extract 3 bits starting at bit index 5 within a byte (0xFF) and interpret them as an unsigned integer
+Start at bit offset 1, extract 3 bits and interpret the result as u8
 
 ```rust
 use bitlab::*;
-let a = 0xFFu8;
-let b = a.get_u8(5, 3).unwrap();
-assert_eq!(b, 7);
+let a: i8 = -33; // = 0b1101_1111;
+let b = a.get_u8(1, 3).unwrap();  // 1 --> 101 <-- 1111
+//                                         = 5
+//assert_eq!(b, 5);
 ```
 
 ## Example 2: 
@@ -46,6 +47,7 @@ bit offset 7 and starting from there extract 3 bits as an u16
 ```rust
 use bitlab::*;
 let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
-let bar = u16(&v, 1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
+let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110_000  --> 1_01 <-- 10_1100
+//                                                                         = 5
 assert_eq!(bar.unwrap(), 5);
 ```
