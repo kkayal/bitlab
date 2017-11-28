@@ -1,11 +1,8 @@
 [![Travis Build Status](https://api.travis-ci.org/kkayal/bitlab.svg?branch=master)](https://travis-ci.org/kkayal/bitlab)
 
-# bitlab
-Extracting a range of bits from binary data
-
 # Objective:
 
-To help developing applications, which extract bit level data from a binary source such as spacecraft telemetry
+To extract a range of bits from a binary data source
 
 # Status
 
@@ -17,15 +14,12 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.4.0
+0.4.1
 
-# Installation
+# Usage
 
-Just add the following line under [dependencies] to your Cargo.toml file
-
-    bitlab = "0.4.0"
-
-# Examples
+1. In your Cargo.toml file, add `bitlab = "0.4"` under `[dependencies]`
+2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 
 ## Example 1: 
 
