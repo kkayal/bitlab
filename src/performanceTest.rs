@@ -6,7 +6,7 @@ use std::time::{Instant};
 fn main() {
 	let a = 0xFFu8;
 	let mut _b:u8 = 0;
-	let n = 100_001;
+	let n = 1_000_001;
 
 	let now = Instant::now();
 	for _n in 1..n {

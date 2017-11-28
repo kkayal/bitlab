@@ -10,7 +10,7 @@
 //!
 //! # Version
 //!
-//! 0.3.0
+//! 0.4.0
 //!
 //! # Examples
 //!
@@ -55,6 +55,8 @@
 	html_favicon_url = "https://www.rust-lang.org/favicon.ico",
 	html_root_url = "https://doc.rust-lang.org/")]
 
+static OUT_OF_RANGE_MSG: &str = "Out of range";
+
 /// Defines a number of functions, which extract a range of bits from
 /// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
 /// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
@@ -72,7 +74,7 @@ pub trait ExtractBitsFromIntegralTypes {
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)>;
+fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -85,7 +87,7 @@ fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)>;
+fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -98,7 +100,7 @@ fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)>;
+fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -111,7 +113,7 @@ fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)>;
+fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -124,7 +126,7 @@ fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)>;
+fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -137,7 +139,7 @@ fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)>;
+fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -150,7 +152,7 @@ fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)>;
+fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -163,14 +165,14 @@ fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)>;
+fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str>;
 }
 
 impl ExtractBitsFromIntegralTypes for u8 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 8 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -187,10 +189,10 @@ impl ExtractBitsFromIntegralTypes for u8 {
 		Ok(copy)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 8 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 		// Note that I did think about using mem::size_of::<T>() instead of
 		// the literal 8 above. This would also deliver the 8 at compile time and
@@ -218,32 +220,32 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		Ok(self.get_u8(start, length)? as u16)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		Ok(self.get_i8(start, length)? as i16)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		Ok(self.get_u8(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		Ok(self.get_i8(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		Ok(self.get_u8(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		Ok(self.get_i8(start, length)? as i64)
 	}
 }
@@ -252,69 +254,69 @@ impl ExtractBitsFromIntegralTypes for i8 {
 	// TODO: Check if the type conversions below have an impact to
 	// run-time performance or if it is better to optimise
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		(self as u8).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		(self as u8).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		(self as u8).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		(self as u8).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		(self as u8).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		(self as u8).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		(self as u8).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		(self as u8).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u16 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8".to_string());
+			return Err("The length parameter is too big for a u8");
 		}
 
 		// Return the result
 		Ok(self.get_u16(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8".to_string());
+			return Err("The length parameter is too big for a i8");
 		}
 
 		// Return the result
 		Ok(self.get_i16(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 16 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -331,10 +333,10 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(copy)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 16 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -352,22 +354,22 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		Ok(self.get_u16(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		Ok(self.get_i16(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		Ok(self.get_u16(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		Ok(self.get_i16(start, length)? as i64)
 	}
 }
@@ -375,87 +377,87 @@ impl ExtractBitsFromIntegralTypes for u16 {
 
 impl ExtractBitsFromIntegralTypes for i16 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		(self as u16).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		(self as u16).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		(self as u16).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		(self as u16).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		(self as u16).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		(self as u16).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		(self as u16).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		(self as u16).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u32 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8".to_string());
+			return Err("The length parameter is too big for a u8");
 		}
 
 		// Return the result
 		Ok(self.get_u32(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8".to_string());
+			return Err("The length parameter is too big for a i8");
 		}
 
 		// Return the result
 		Ok(self.get_i32(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		if length > 16 {
-			return Err("The length parameter is too big for a u16".to_string());
+			return Err("The length parameter is too big for a u16");
 		}
 
 		// Return the result
 		Ok(self.get_u32(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		if length > 16 {
-			return Err("The length parameter is too big for a i16".to_string());
+			return Err("The length parameter is too big for a i16");
 		}
 
 		// Return the result
 		Ok(self.get_u32(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 32 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -472,10 +474,10 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(copy)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 32 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -493,117 +495,117 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		Ok(self.get_u32(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		Ok(self.get_i32(start, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i32 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		(self as u32).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		(self as u32).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		(self as u32).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		(self as u32).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		(self as u32).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		(self as u32).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		(self as u32).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		(self as u32).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u64 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8".to_string());
+			return Err("The length parameter is too big for a u8");
 		}
 
 		// Return the result
 		Ok(self.get_u64(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8".to_string());
+			return Err("The length parameter is too big for a i8");
 		}
 
 		// Return the result
 		Ok(self.get_i64(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		if length > 16 {
-			return Err("The length parameter is too big for a u16".to_string());
+			return Err("The length parameter is too big for a u16");
 		}
 
 		// Return the result
 		Ok(self.get_u64(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		if length > 16 {
-			return Err("The length parameter is too big for a i16".to_string());
+			return Err("The length parameter is too big for a i16");
 		}
 
 		// Return the result
 		Ok(self.get_i64(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		if length > 32 {
-			return Err("The length parameter is too big for a u32".to_string());
+			return Err("The length parameter is too big for a u32");
 		}
 
 		// Return the result
 		Ok(self.get_u64(start, length)? as u32)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		if length > 32 {
-			return Err("The length parameter is too big for a i32".to_string());
+			return Err("The length parameter is too big for a i32");
 		}
 
 		// Return the result
 		Ok(self.get_i64(start, length)? as i32)
 	}
 
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 64 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -620,10 +622,10 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(copy)
 	}
 
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		// Check if the desired range is valid
 		if start + length > 64 {
-			return Err("Out of range".to_string());
+			return Err(OUT_OF_RANGE_MSG);
 		}
 
 		// Don't touch the original
@@ -643,42 +645,42 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 impl ExtractBitsFromIntegralTypes for i64 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, (String)> {
+	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
 		(self as u64).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, (String)> {
+	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
 		(self as u64).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, (String)> {
+	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
 		(self as u64).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, (String)> {
+	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
 		(self as u64).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, (String)> {
+	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
 		(self as u64).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, (String)> {
+	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
 		(self as u64).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, (String)> {
+	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
 		(self as u64).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, (String)> {
+	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
 		(self as u64).get_i64(start, length)
 	}
 }
@@ -702,7 +704,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<u8, (String)>;
+	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<u8, &'static str>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 8 bit integer or an error message.
 	///
@@ -719,7 +721,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i8(&self, byte_offset: usize, start: usize, length: usize) -> Result<i8, (String)>;
+	fn get_i8(&self, byte_offset: usize, start: usize, length: usize) -> Result<i8, &'static str>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer or an error message.
 	///
@@ -736,7 +738,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<u16, (String)>;
+	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<u16, &'static str>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 16 bit integer or an error message.
 	///
@@ -753,7 +755,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i16(&self, byte_offset: usize, start: usize, length: usize) -> Result<i16, (String)>;
+	fn get_i16(&self, byte_offset: usize, start: usize, length: usize) -> Result<i16, &'static str>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer or an error message.
 	///
@@ -770,7 +772,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<u32, (String)>;
+	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<u32, &'static str>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 32 bit integer or an error message.
 	///
@@ -787,12 +789,11 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<i32, (String)>;
+	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<i32, &'static str>;
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
-	fn get_u8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u8, String> {
-		let err1 = String::from("Out of range");
+	fn get_u8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u8, &'static str> {
 		if length <= 8 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -828,15 +829,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(result as u8);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 
-	fn get_i8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i8, String> {
-		let err1 = String::from("Out of range");
+	fn get_i8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i8, &'static str> {
 		if length <= 8 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -872,15 +872,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(result as i8);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 
-	fn get_u16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u16, String> {
-		let err1 = String::from("Out of range");
+	fn get_u16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u16, &'static str> {
 		if length <= 16 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -944,15 +943,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy4 as u16);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 
-	fn get_i16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i16, String> {
-		let err1 = String::from("Out of range");
+	fn get_i16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i16, &'static str> {
 		if length <= 16 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -1016,15 +1014,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy4 as i16);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 
-	fn get_u32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u32, String> {
-		let err1 = String::from("Out of range");
+	fn get_u32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u32, &'static str> {
 		if length <= 32 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -1146,15 +1143,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy6 as u32);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 
-	fn get_i32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i32, String> {
-		let err1 = String::from("Out of range");
+	fn get_i32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i32, &'static str> {
 		if length <= 32 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -1276,20 +1272,26 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy6 as i32);
 				}
 			} else {
-				return Err(err1)
+				return Err(OUT_OF_RANGE_MSG)
 			}
 		} else {
-			return Err(err1)
+			return Err(OUT_OF_RANGE_MSG)
 		}
 	}
 }
+
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//                          UNIT TESTS                             //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod tests {
 	use super::*;
 
 	#[test]
-	fn range_checks() {
+	fn range_checks_for_integrals() {
 		//
 		// Range checks for u8 as source
 		//
@@ -1298,42 +1300,42 @@ mod tests {
 		// Start is OK, Length is OK, but the sum is > 8
 		match a.get_u8(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u32(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i16(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i32(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		//
@@ -1342,17 +1344,17 @@ mod tests {
 		let a: u16 = 0x05AA;
 		match a.get_u8(20, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(0, 17) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(20, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		// Start & Length would be OK for the output, but not for the source
@@ -1382,12 +1384,12 @@ mod tests {
 
 		match a.get_u32(20, 30) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(20, 9) {
@@ -1402,12 +1404,12 @@ mod tests {
 
 		match a.get_i32(20, 30) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		//
@@ -1431,12 +1433,12 @@ mod tests {
 
 		match a.get_u64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(62, 4) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(20, 9) {
@@ -1456,12 +1458,12 @@ mod tests {
 
 		match a.get_i64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(62, 4) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		//
@@ -1472,42 +1474,42 @@ mod tests {
 		// Start is OK, Length is OK, but the sum is > 8
 		match a.get_u8(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u32(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i16(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i32(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(5, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		//
@@ -1516,17 +1518,17 @@ mod tests {
 		let a: i16 = 0x05AA;
 		match a.get_u8(20, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(0, 17) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u16(20, 7) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		// Start & Length would be OK for the output, but not for the source
@@ -1556,12 +1558,12 @@ mod tests {
 
 		match a.get_u32(20, 30) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(20, 9) {
@@ -1576,12 +1578,12 @@ mod tests {
 
 		match a.get_i32(20, 30) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		//
@@ -1605,12 +1607,12 @@ mod tests {
 
 		match a.get_u64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_u64(62, 4) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i8(20, 9) {
@@ -1630,12 +1632,59 @@ mod tests {
 
 		match a.get_i64(0, 70) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
 		match a.get_i64(62, 4) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "Out of range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+	}
+
+	#[test]
+	fn range_checks_for_vec_u8() {
+		//
+		// Range checking
+		//
+
+		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
+
+		// The byte offset has to be < sizeof(vector in bytes)
+		match v.get_u8(5, 2, 3) {
+			Ok(_) => panic!("The range check failed to detect invalid byte offset"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+
+		// The bit offset has to be < 8
+		match v.get_u8(1, 8, 10) {
+			Ok(_) => panic!("The range check failed to detect invalid bit offset"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+
+		// A u8 cannot have 12 bits
+		match v.get_u8(1, 5, 12) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+
+		// Even if all three parametrs are individually within their range,
+		// the combination might leak outside the vector
+		match v.get_u8(4, 7, 5) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+
+		// A u16 cannot have 17 bits
+		match v.get_u16(1, 5, 17) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
+		}
+
+		// Even if all three parametrs are individually within their range,
+		// the combination might leak outside the vector
+		match v.get_u16(4, 7, 10) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 	}
 
@@ -1926,55 +1975,13 @@ mod tests {
 		// Get a u16 from a range, which spans over 3 bytes
 		let bar = v.get_i32(1, 7, 10); // Relevant bytes = 0x61, 0x6C, 0x6C
 		assert_eq!(bar.unwrap(), -296); // 0b0110_000 --> 1_0110_1100_0 <-- 110_1100
-
-		//
-		// Range checking
-		//
-
-		// The byte offset has to be < sizeof(vector in bytes)
-		match v.get_u8(5, 2, 3) {
-			Ok(_) => panic!("The range check failed to detect invalid byte offset"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
-
-		// The bit offset has to be < 8
-		match v.get_u8(1, 8, 10) {
-			Ok(_) => panic!("The range check failed to detect invalid bit offset"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
-
-		// A u8 cannot have 12 bits
-		match v.get_u8(1, 5, 12) {
-			Ok(_) => panic!("The range check failed to detect invalid length"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
-
-		// Even if all three parametrs are individually within their range,
-		// the combination might leak outside the vector
-		match v.get_u8(4, 7, 5) {
-			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
-
-		// A u16 cannot have 17 bits
-		match v.get_u16(1, 5, 17) {
-			Ok(_) => panic!("The range check failed to detect invalid length"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
-
-		// Even if all three parametrs are individually within their range,
-		// the combination might leak outside the vector
-		match v.get_u16(4, 7, 10) {
-			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, "Out of range"),
-		}
 	}
 
-	// TODO: add test cases for get_32 and get_64
+	// TODO: add more test cases
 
 	#[test]
 	#[should_panic]
 	fn panics_as_expected() {
-		panic!("So far nothing should panic!");
+		panic!("So far, nothing should panic!");
 	}
 }
