@@ -17,13 +17,13 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.2.1
+0.3.0
 
 # Installation
 
 Just add the following line under [dependencies] to your Cargo.toml file
 
-    bitlab = "0.2.1"
+    bitlab = "0.3.0"
 
 # Examples
 
@@ -36,7 +36,7 @@ use bitlab::*;
 let a: i8 = -33; // = 0b1101_1111;
 let b = a.get_u8(1, 3).unwrap();  // 1 --> 101 <-- 1111
 //                                         = 5
-//assert_eq!(b, 5);
+assert_eq!(b, 5);
 ```
 
 ## Example 2: 
