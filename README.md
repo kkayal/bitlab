@@ -14,7 +14,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.4.1
+0.4.2
 
 # Usage
 
@@ -44,4 +44,12 @@ let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
 let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110_000  --> 1_01 <-- 10_1100
 //                                                                         = 5
 assert_eq!(bar.unwrap(), 5);
+```
+
+## Example 3:
+
+There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the folloeing in the command line
+
+```
+cargo run --release --example gif
 ```
