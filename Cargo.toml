@@ -1,6 +1,6 @@
 [package]
 name = "bitlab"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Kağan Kayal"]
 description = "Extracting a range of bits from a binary data source"
 documentation = "https://docs.rs/bitlab/"
