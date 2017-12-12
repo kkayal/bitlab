@@ -15,7 +15,7 @@
 //!
 //!# Version
 //!
-//!0.4.3
+//!0.4.4
 //!
 //!# Usage
 //!
@@ -75,6 +75,8 @@
 
 static OUT_OF_RANGE_MSG: &str = "Out of range";
 
+type Result<T> = std::result::Result<T, &'static str>;
+
 /// Defines a number of functions, which extract a range of bits from
 /// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
 /// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
@@ -92,7 +94,7 @@ pub trait ExtractBitsFromIntegralTypes {
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str>;
+fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -105,7 +107,7 @@ fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str>;
+fn get_u16(self, start: usize, length: usize) -> Result<(u16)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -118,7 +120,7 @@ fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str>;
+fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -131,7 +133,7 @@ fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str>;
+fn get_u64(self, start: usize, length: usize) -> Result<(u64)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -144,7 +146,7 @@ fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str>;
+fn get_i8(self, start: usize, length: usize) -> Result<(i8)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -157,7 +159,7 @@ fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str>;
+fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -170,7 +172,7 @@ fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str>;
+fn get_i32(self, start: usize, length: usize) -> Result<(i32)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
@@ -183,11 +185,11 @@ fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str>;
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
 /// - **length** (usize) the number of bits to be extracted.
-fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str>;
+fn get_i64(self, start: usize, length: usize) -> Result<(i64)>;
 }
 
 impl ExtractBitsFromIntegralTypes for u8 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		// Check if the desired range is valid
 		if start + length > 8 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -207,7 +209,7 @@ impl ExtractBitsFromIntegralTypes for u8 {
 		Ok(copy)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		// Check if the desired range is valid
 		if start + length > 8 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -238,32 +240,32 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		Ok(self.get_u8(start, length)? as u16)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		Ok(self.get_i8(start, length)? as i16)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		Ok(self.get_u8(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		Ok(self.get_i8(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		Ok(self.get_u8(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		Ok(self.get_i8(start, length)? as i64)
 	}
 }
@@ -272,48 +274,48 @@ impl ExtractBitsFromIntegralTypes for i8 {
 	// TODO: Check if the type conversions below have an impact to
 	// run-time performance or if it is better to optimise
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		(self as u8).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		(self as u8).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		(self as u8).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		(self as u8).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		(self as u8).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		(self as u8).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		(self as u8).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		(self as u8).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u16 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a u8");
 		}
@@ -322,7 +324,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_u16(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a i8");
 		}
@@ -331,7 +333,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_i16(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		// Check if the desired range is valid
 		if start + length > 16 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -351,7 +353,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(copy)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		// Check if the desired range is valid
 		if start + length > 16 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -372,22 +374,22 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		Ok(self.get_u16(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		Ok(self.get_i16(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		Ok(self.get_u16(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		Ok(self.get_i16(start, length)? as i64)
 	}
 }
@@ -395,48 +397,48 @@ impl ExtractBitsFromIntegralTypes for u16 {
 
 impl ExtractBitsFromIntegralTypes for i16 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		(self as u16).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		(self as u16).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		(self as u16).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		(self as u16).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		(self as u16).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		(self as u16).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		(self as u16).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		(self as u16).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u32 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a u8");
 		}
@@ -445,7 +447,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a i8");
 		}
@@ -454,7 +456,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_i32(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		if length > 16 {
 			return Err("The length parameter is too big for a u16");
 		}
@@ -463,7 +465,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		if length > 16 {
 			return Err("The length parameter is too big for a i16");
 		}
@@ -472,7 +474,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		// Check if the desired range is valid
 		if start + length > 32 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -492,7 +494,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(copy)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		// Check if the desired range is valid
 		if start + length > 32 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -513,60 +515,60 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		Ok(self.get_u32(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		Ok(self.get_i32(start, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i32 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		(self as u32).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		(self as u32).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		(self as u32).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		(self as u32).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		(self as u32).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		(self as u32).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		(self as u32).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		(self as u32).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u64 {
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a u8");
 		}
@@ -575,7 +577,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
 			return Err("The length parameter is too big for a i8");
 		}
@@ -584,7 +586,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		if length > 16 {
 			return Err("The length parameter is too big for a u16");
 		}
@@ -593,7 +595,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		if length > 16 {
 			return Err("The length parameter is too big for a i16");
 		}
@@ -602,7 +604,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		if length > 32 {
 			return Err("The length parameter is too big for a u32");
 		}
@@ -611,7 +613,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u32)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		if length > 32 {
 			return Err("The length parameter is too big for a i32");
 		}
@@ -620,7 +622,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i32)
 	}
 
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		// Check if the desired range is valid
 		if start + length > 64 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -640,7 +642,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(copy)
 	}
 
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		// Check if the desired range is valid
 		if start + length > 64 {
 			return Err(OUT_OF_RANGE_MSG);
@@ -663,42 +665,42 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 impl ExtractBitsFromIntegralTypes for i64 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		(self as u64).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		(self as u64).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		(self as u64).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		(self as u64).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		(self as u64).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		(self as u64).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<u64, &'static str> {
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		(self as u64).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<i64, &'static str> {
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		(self as u64).get_i64(start, length)
 	}
 }
@@ -722,7 +724,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<u8, &'static str>;
+	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u8)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 8 bit integer or an error message.
 	///
@@ -739,7 +741,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i8(&self, byte_offset: usize, start: usize, length: usize) -> Result<i8, &'static str>;
+	fn get_i8(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i8)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer or an error message.
 	///
@@ -756,7 +758,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<u16, &'static str>;
+	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u16)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 16 bit integer or an error message.
 	///
@@ -773,7 +775,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i16(&self, byte_offset: usize, start: usize, length: usize) -> Result<i16, &'static str>;
+	fn get_i16(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i16)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer or an error message.
 	///
@@ -790,7 +792,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<u32, &'static str>;
+	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u32)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 32 bit integer or an error message.
 	///
@@ -807,11 +809,11 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (usize) the number of bytes to skip in source
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<i32, &'static str>;
+	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i32)>;
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
-	fn get_u8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u8, &'static str> {
+	fn get_u8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u8)> {
 		if length <= 8 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -854,7 +856,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i8, &'static str> {
+	fn get_i8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i8)> {
 		if length <= 8 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -897,7 +899,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u16, &'static str> {
+	fn get_u16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u16)> {
 		if length <= 16 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -968,7 +970,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i16, &'static str> {
+	fn get_i16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i16)> {
 		if length <= 16 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -1039,7 +1041,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<u32, &'static str> {
+	fn get_u32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u32)> {
 		if length <= 32 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
@@ -1168,7 +1170,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<i32, &'static str> {
+	fn get_i32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i32)> {
 		if length <= 32 && bit_offset <= 7 {
 			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				if bit_offset + length <= 8 {
