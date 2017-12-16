@@ -15,7 +15,7 @@
 //!
 //!# Version
 //!
-//!0.4.4
+//!0.4.5
 //!
 //!# Usage
 //!
@@ -74,8 +74,17 @@
 	html_root_url = "https://doc.rust-lang.org/")]
 
 static OUT_OF_RANGE_MSG: &str = "Out of range";
+static LEN_TOO_BIG_MSG: &str = "The length parameter is too big for a ";
 
-type Result<T> = std::result::Result<T, &'static str>;
+// Result-type-alias-idiom
+// Source https://doc.rust-lang.org/book/first-edition/error-handling.html#the-result-type-alias-idiom
+// Shortens the return type in function signatures
+type Result<T> = std::result::Result<T, String>;
+
+// Convinience macro to shorten String::from("hello") to s!("hello")
+macro_rules! s {
+	( $x:expr ) => { String::from($x); };
+}
 
 /// Defines a number of functions, which extract a range of bits from
 /// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
@@ -192,7 +201,7 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		// Check if the desired range is valid
 		if start + length > 8 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -212,18 +221,8 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		// Check if the desired range is valid
 		if start + length > 8 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
-		// Note that I did think about using mem::size_of::<T>() instead of
-		// the literal 8 above. This would also deliver the 8 at compile time and
-		// I could get a step closer to implement this function in a more
-		// generic way. But it doesn't help, because the type conversion below as
-		// let mut copy = *self as T; doesn't compile for good reasons.
-		// I also tried to implement a macro, but that I failed to get it right
-		// So, I decided to stick to a simple trait without geneics and implement
-		// the same thing for many type combinations... It is more work and
-		// more risky to make copy & paste errors. True, but the first point is
-		// just my problem and the second can be ironed out by extensive unit testing.
 
 		// Don't touch the original
 		let mut copy = self as i8;
@@ -317,7 +316,7 @@ impl ExtractBitsFromIntegralTypes for i8 {
 impl ExtractBitsFromIntegralTypes for u16 {
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
 
 		// Return the result
@@ -326,7 +325,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 
 	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
 
 		// Return the result
@@ -336,7 +335,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		// Check if the desired range is valid
 		if start + length > 16 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -356,7 +355,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		// Check if the desired range is valid
 		if start + length > 16 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -440,7 +439,7 @@ impl ExtractBitsFromIntegralTypes for i16 {
 impl ExtractBitsFromIntegralTypes for u32 {
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
 
 		// Return the result
@@ -449,7 +448,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 
 	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
 
 		// Return the result
@@ -458,7 +457,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 
 	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		if length > 16 {
-			return Err("The length parameter is too big for a u16");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
 
 		// Return the result
@@ -467,17 +466,17 @@ impl ExtractBitsFromIntegralTypes for u32 {
 
 	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		if length > 16 {
-			return Err("The length parameter is too big for a i16");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
 
 		// Return the result
-		Ok(self.get_u32(start, length)? as i16)
+		Ok(self.get_i32(start, length)? as i16)
 	}
 
 	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		// Check if the desired range is valid
 		if start + length > 32 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -497,7 +496,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		// Check if the desired range is valid
 		if start + length > 32 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -570,7 +569,7 @@ impl ExtractBitsFromIntegralTypes for i32 {
 impl ExtractBitsFromIntegralTypes for u64 {
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a u8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
 
 		// Return the result
@@ -579,7 +578,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
 		if length > 8 {
-			return Err("The length parameter is too big for a i8");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
 
 		// Return the result
@@ -588,7 +587,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
 		if length > 16 {
-			return Err("The length parameter is too big for a u16");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
 
 		// Return the result
@@ -597,7 +596,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
 		if length > 16 {
-			return Err("The length parameter is too big for a i16");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
 
 		// Return the result
@@ -606,7 +605,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
 		if length > 32 {
-			return Err("The length parameter is too big for a u32");
+			return Err(s!(LEN_TOO_BIG_MSG) + "u32");
 		}
 
 		// Return the result
@@ -615,7 +614,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
 		if length > 32 {
-			return Err("The length parameter is too big for a i32");
+			return Err(s!(LEN_TOO_BIG_MSG) + "i32");
 		}
 
 		// Return the result
@@ -625,7 +624,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
 		// Check if the desired range is valid
 		if start + length > 64 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -645,7 +644,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		// Check if the desired range is valid
 		if start + length > 64 {
-			return Err(OUT_OF_RANGE_MSG);
+			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 
 		// Don't touch the original
@@ -704,6 +703,7 @@ impl ExtractBitsFromIntegralTypes for i64 {
 		(self as u64).get_i64(start, length)
 	}
 }
+
 
 /// Defines a number of functions, which extract a range of bits from a Vec<u8>
 /// There is one function for each variable type to be returned
@@ -849,10 +849,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(result as u8);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 
@@ -892,10 +892,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(result as i8);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 
@@ -963,10 +963,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy4 as u16);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 
@@ -1034,10 +1034,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy4 as i16);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 
@@ -1163,10 +1163,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy6 as u32);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 
@@ -1292,10 +1292,10 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy6 as i32);
 				}
 			} else {
-				return Err(OUT_OF_RANGE_MSG)
+				return Err(s!(OUT_OF_RANGE_MSG))
 			}
 		} else {
-			return Err(OUT_OF_RANGE_MSG)
+			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
 }
@@ -1749,6 +1749,13 @@ mod tests {
 		assert_eq!(a, 0x05AA00000000, "The source has changed!");
 	}
 
+	macro_rules! get_5_3 {
+		( $a:ident, $x:ident, $y:expr ) => {
+			let b = $a.$x(5, 3).unwrap(); // extracted bits = 101
+			assert_eq!(b, $y);
+		};
+	}
+
 	#[test]
 	fn correct_results() {
 		//
@@ -1757,52 +1764,41 @@ mod tests {
 
 		// Same size unsigned
 		let a: u8 = 0b0000_0101;
-		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
 
-		// Same size signed
-		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
 
-		// the type of the result is larger and unsigned
-		let b = a.get_u16(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
+		let a: i8 = 0b0000_0101;
 
-		// the type of the result is larger and unsigned
-		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
-
-		// the type of the result is larger and unsigned
-		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
-
-		// the type of the result is larger and signed
-		let b = a.get_i16(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
-
-		// the type of the result is larger and signed
-		let b = a.get_i32(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
-
-		// the type of the result is larger and signed
-		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
 
 		//
 		// 16 bit input
 		//
 
 		let a: u16 = 0b0000_0101_1010_1010;
-		let b = a.get_u16(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
 
-		// the type of the result is smaller and unsigned. Pick a bit range on the left side
-		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
-
-		// the type of the result is smaller and signed. Pick a bit range on the left side
-		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
 
 		// the type of the result is smaller and unsigned. Pick a bit range on the right side
 		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
@@ -1812,20 +1808,23 @@ mod tests {
 		let b = a.get_i8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, -3);
 
-		// the type of the result is larger and unsigned
-		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101. b is u32
+		let a: i16 = 0b0000_0101_1010_1010;
+
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
 
-		// the type of the result is larger and unsigned
-		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101. b is u64
-		assert_eq!(b, 5);
-
-		// the type of the result is larger and signed
-		let b = a.get_i32(5, 3).unwrap(); // extracted bits = 101. b is u32
-		assert_eq!(b, -3);
-
-		// the type of the result is larger and signed
-		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101. b is u64
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, -3);
 
 		//
@@ -1833,27 +1832,41 @@ mod tests {
 		//
 
 		let a: u32 = 0b0000_0101_1010_1010_1010_1010_1010_1010;
-		let b = a.get_u32(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
 
-		// the type of the result is smaller and unsigned. Pick a bit range on the left side
-		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
-
-		// the type of the result is smaller and signed. Pick a bit range on the right side
-		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
 
 		// the type of the result is smaller and unsigned. Pick a bit range on the right side
 		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
 
-		// the type of the result is larger and unsigned
-		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101. b is u64
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(12, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
+
+		let a: i32 = 0b0000_0101_1010_1010_1010_1010_1010_1010;
+
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
+
+		// the type of the result is smaller and unsigned. Pick a bit range on the right side
+		let b = a.get_u8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
 
-		// the type of the result is larger and signed
-		let b = a.get_i64(5, 3).unwrap(); // extracted bits = 101. b is i64
+		// the type of the result is smaller and signed. Pick a bit range on the right side
+		let b = a.get_i8(12, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, -3);
 
 		//
@@ -1861,16 +1874,15 @@ mod tests {
 		//
 
 		let a: u64 = 0b0000_0101_1010_1010_1010_1010_1010_1010_0000_0101_1010_1010_1010_1010_1010_1010;
-		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
 
-		// the type of the result is smaller and unsigned. Pick a bit range on the left side
-		let b = a.get_u8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, 5);
-
-		// the type of the result is smaller and signed. Pick a bit range on the left side
-		let b = a.get_i8(5, 3).unwrap(); // extracted bits = 101
-		assert_eq!(b, -3);
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
 
 		// the type of the result is smaller and signed. Pick a bit range on the right side
 		let b = a.get_i8(60, 3).unwrap(); // extracted bits = 101
@@ -1880,24 +1892,24 @@ mod tests {
 		let b = a.get_u8(60, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
 
-		//
-		// Testing signed input types
-		//
+		let a: i64 = 0b0000_0101_1010_1010_1010_1010_1010_1010_0000_0101_1010_1010_1010_1010_1010_1010;
 
-		let a: i32 = -1;
+		get_5_3!(a, get_u8, 5);
+		get_5_3!(a, get_i8, -3);
+		get_5_3!(a, get_u16, 5);
+		get_5_3!(a, get_i16, -3);
+		get_5_3!(a, get_u32, 5);
+		get_5_3!(a, get_i32, -3);
+		get_5_3!(a, get_u64, 5);
+		get_5_3!(a, get_i64, -3);
+
 		// the type of the result is smaller and signed. Pick a bit range on the right side
-		let b = a.get_i8(1, 3).unwrap(); // extracted bits = 111
-		assert_eq!(b, -1);
+		let b = a.get_i8(60, 3).unwrap(); // extracted bits = 101
+		assert_eq!(b, -3);
 
 		// the type of the result is smaller and unsigned. Pick a bit range on the right side
-		let b = a.get_u8(1, 3).unwrap(); // extracted bits = 111
-		assert_eq!(b, 7);
-
-		let a: i64 = 0b0000_0101_1010_1010_1010_1010_1010_1010_0000_0101_1010_1010_1010_1010_1010_1010;
-		let b = a.get_u64(5, 3).unwrap(); // extracted bits = 101
+		let b = a.get_u8(60, 3).unwrap(); // extracted bits = 101
 		assert_eq!(b, 5);
-
-		// TODO: Add systematic test cases for signed integers as source of data
 	}
 
 	#[test]
