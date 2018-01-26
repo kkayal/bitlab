@@ -1687,7 +1687,7 @@ mod tests {
 			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
-		// Even if all three parametrs are individually within their range,
+		// Even if all three parameters are individually within their range,
 		// the combination might leak outside the vector
 		match v.get_u8(4, 7, 5) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
