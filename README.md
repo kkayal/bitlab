@@ -15,11 +15,11 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.4.5
+0.5.0
 
 # Usage
 
-1. In your Cargo.toml file, add `bitlab = "0.4"` under `[dependencies]`
+1. In your Cargo.toml file, add `bitlab = "0.5"` under `[dependencies]`
 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 
 ## Example 1: 
@@ -34,7 +34,23 @@ let b = a.get_u8(1, 3).unwrap();  // 1 --> 101 <-- 1111
 assert_eq!(b, 5);
 ```
 
-## Example 2: 
+## Example 2:
+
+```rust
+use bitlab::*;
+let a: u8 = 0b0000_0101;
+
+// Get the most significant bit. It has the bit offset 0
+assert_eq!(a.get_bit(0).unwrap(), false);
+
+// Set the most significant bit. Expect 0b1000_0101
+assert_eq!(a.set_bit(0).unwrap(), 133);
+
+// Clear the most significant bit. Expect 0b0000_0101
+assert_eq!(a.clear_bit(0).unwrap(), 5);
+```
+
+## Example 3: 
 
 The data source is a vector of u8 types. We want to go to byte offset 1, 
 bit offset 7 and starting from there extract 3 bits as an u16
@@ -47,7 +63,7 @@ let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110_000  --> 1_01 
 assert_eq!(bar.unwrap(), 5);
 ```
 
-## Example 3:
+## Example 4:
 
 There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the folloeing in the command line
 

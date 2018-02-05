@@ -15,11 +15,11 @@
 //!
 //!# Version
 //!
-//!0.4.5
+//!0.5.0
 //!
 //!# Usage
 //!
-//!1. In your Cargo.toml file, add `bitlab = "0.4"` under `[dependencies]`
+//!1. In your Cargo.toml file, add `bitlab = "0.5"` under `[dependencies]`
 //!2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 //!
 //!## Example 1: 
@@ -34,7 +34,23 @@
 //!assert_eq!(b, 5);
 //!```
 //!
-//!## Example 2: 
+//!## Example 2:
+//!
+//!```rust
+//!use bitlab::*;
+//!let a: u8 = 0b0000_0101;
+//!
+//!// Get the most significant bit. It has the bit offset 0
+//!assert_eq!(a.get_bit(0).unwrap(), false);
+//!
+//!// Set the most significant bit. Expect 0b1000_0101
+//!assert_eq!(a.set_bit(0).unwrap(), 133);
+//!
+//!// Clear the most significant bit. Expect 0b0000_0101
+//!assert_eq!(a.clear_bit(0).unwrap(), 5);
+//!```
+//!
+//!## Example 3: 
 //!
 //!The data source is a vector of u8 types. We want to go to byte offset 1, 
 //!bit offset 7 and starting from there extract 3 bits as an u16
@@ -47,7 +63,7 @@
 //!assert_eq!(bar.unwrap(), 5);
 //!```
 //!
-//!## Example 3:
+//!## Example 4:
 //!
 //!There is a very simple application in the examples directory,
 //!which extracts the color resolution from a real gif file.
@@ -1300,6 +1316,500 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 	}
 }
 
+/// Defines a set of functions to get, set and clear single bits
+pub trait SingleBits {
+
+	/// Sets a single bit and returns a Result object, which contains the modified variable
+	///
+	/// On success, the Result object contains the desired value
+	///
+	/// On error, the Result object contains an error message.
+	/// This may happen if the bit_offset is larger than the data source (bit_offset > variable size)
+	///
+	/// Parameters:
+	///
+	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Tests a single bit and returns true or false in a Result object
+	///
+	/// On error, the Result object contains an error message.
+	/// This may happen if the bit_offset is larger than the data source (bit_offset > variable size)
+	///
+	/// Parameters:
+	///
+	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)>;
+
+	/// Clears a single bit and then returns a Result Object, which contains the modified varibale
+	///
+	/// On success, the Rsult object contains the desired value
+	///
+	/// On error, the Result object contains an error message.
+	/// This may happen if the bit_offset is larger than the data source (bit_offset > variable size)
+	///
+	/// Parameters:
+	///
+	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
+}
+
+impl SingleBits for u8 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy |= a;
+
+		Ok(copy)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u8 = 0b0111_1111; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self;
+		copy &= a;
+
+		Ok(copy)
+	}
+}
+
+impl SingleBits for i8 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u8;
+		copy |= a;
+
+		Ok(copy as i8)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u8;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 7 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u8 = 0b0111_1111; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self as u8;
+		copy &= a;
+
+		Ok(copy as i8)
+	}
+}
+
+impl SingleBits for u16 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy |= a;
+
+		Ok(copy)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self;
+		copy &= a;
+
+		Ok(copy)
+	}
+}
+
+impl SingleBits for i16 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u16;
+		copy |= a;
+
+		Ok(copy as i16)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u16;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 15 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self as u16;
+		copy &= a;
+
+		Ok(copy as i16)
+	}
+}
+
+impl SingleBits for u32 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy |= a;
+
+		Ok(copy)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self;
+		copy &= a;
+
+		Ok(copy)
+	}
+}
+
+impl SingleBits for i32 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u32;
+		copy |= a;
+
+		Ok(copy as i32)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u32;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 31 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self as u32;
+		copy &= a;
+
+		Ok(copy as i32)
+	}
+}
+
+impl SingleBits for u64 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy |= a;
+
+		Ok(copy)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self;
+		copy &= a;
+
+		Ok(copy)
+	}
+}
+
+impl SingleBits for i64 {
+	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u64;
+		copy |= a;
+
+		Ok(copy as i64)
+	}
+
+	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
+
+		// Shift it to the right according to the desired offset
+		a >>= bit_offset;
+
+		let mut copy = self as u64;
+		copy = copy & a;
+
+		if copy > 0 {
+			Ok(true)
+		} else {
+		  Ok(false)
+		}
+	}
+
+	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+		// Check if the desired range is valid
+		if bit_offset > 63 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+
+		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
+
+		// Shift it to the right according to the desired offset
+		let a = a.rotate_right(bit_offset);
+
+		let mut copy = self as u64;
+		copy &= a;
+
+		Ok(copy as i64)
+	}
+}
+
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
 //                          UNIT TESTS                             //
@@ -2015,5 +2525,200 @@ mod tests {
 	#[should_panic]
 	fn panics_as_expected() {
 		panic!("So far, nothing should panic!");
+	}
+
+	#[test]
+	fn single_bits() {
+		//
+		// Unsigned 8 bit
+		//
+		let a: u8 = 0b0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(5).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 133); // Expected result = 0b1000_0101 = 133;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 69); // Expected result = 0b0100_0101 = 69;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Unsigned 16 bit
+		//
+		let a: u16 = 0b0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(13).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 32773); // Expected result = 0b1000_0000_0000_0101 = 32773;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 16389); // Expected result = 0b0100_0000_0000_0101 = 16389;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Unsigned 32 bit
+		//
+		let a: u32 = 0b0000_0000_0000_0000_0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(29).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 2_147_483_653 ); // Expected result = 0b1000_0000_0000_0000_0000_0000_0000_0101 = 2 ** 31 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 1_073_741_829); // Expected result = 0b0100_0000_0000_0000_0000_0000_0000_0101 = 2 ** 30 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Unsigned 64 bit
+		//
+		let a: u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(61).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 0x80_00_00_00_00_00_00_05); // Expected result = 0x80_00_00_00_00_00_00_05 = 2 ** 63 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 0x40_00_00_00_00_00_00_05); // Expected result = 0x40_00_00_00_00_00_00_05 = 2 ** 62 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Signed 8 bit
+		//
+		let a: i8 = 0b0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(5).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), -123); // Expected result = 0b1000_0101 = 133;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 69); // Expected result = 0b0100_0101 = 69;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Signed 16 bit
+		//
+		let a: i16 = 0b0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(13).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), -32763); // Expected result = 0b1000_0000_0000_0101 = 32773;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 16389); // Expected result = 0b0100_0000_0000_0101 = 16389;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Signed 32 bit
+		//
+		let a: i32 = 0b0000_0000_0000_0000_0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(29).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), -2_147_483_643 ); // Expected result = 0b1000_0000_0000_0000_0000_0000_0000_0101 = 2 ** 31 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 1_073_741_829); // Expected result = 0b0100_0000_0000_0000_0000_0000_0000_0101 = 2 ** 30 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		//
+		// Signed 64 bit
+		//
+		let a: i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0101;
+
+		// Test a single bit. The most significant bit has the bit offset 0
+		assert_eq!(a.get_bit(0).unwrap(), false);
+		// Test an other single bit
+		assert_eq!(a.get_bit(61).unwrap(), true);
+
+		let b = 0; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), -9_223_372_036_854_775_803); // Expected result = 0x80_00_00_00_00_00_00_05 = 2 ** 63 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
+
+		let b = 1; // bit offset. The most significant bit has the bit offset 0
+
+		assert_eq!(a.set_bit(b).unwrap(), 4_611_686_018_427_387_909); // Expected result = 0x40_00_00_00_00_00_00_05 = 2 ** 62 + 5;
+
+		// Clear the same bit again
+		assert_eq!(a.clear_bit(b).unwrap(), 5);
 	}
 }
