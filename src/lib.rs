@@ -15,7 +15,7 @@
 //!
 //!# Version
 //!
-//!0.5.0
+//!0.5.1
 //!
 //!# Usage
 //!
@@ -100,6 +100,22 @@ type Result<T> = std::result::Result<T, String>;
 // Convinience macro to shorten String::from("hello") to s!("hello")
 macro_rules! s {
 	( $x:expr ) => { String::from($x); };
+}
+
+macro_rules! check_max_bit_offset {
+	( $x:expr ) => {
+		if $x > ( std::mem::size_of::<Self>() * 8 - 1 ) as u32 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+	}
+}
+
+macro_rules! check_range {
+	( $x:expr ) => {
+		if $x > std::mem::size_of::<Self>() * 8 {
+			return Err(s!(OUT_OF_RANGE_MSG));
+		}
+	}
 }
 
 /// Defines a number of functions, which extract a range of bits from
@@ -215,10 +231,7 @@ fn get_i64(self, start: usize, length: usize) -> Result<(i64)>;
 
 impl ExtractBitsFromIntegralTypes for u8 {
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
-		// Check if the desired range is valid
-		if start + length > 8 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self;
@@ -235,10 +248,7 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 
 	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
-		// Check if the desired range is valid
-		if start + length > 8 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self as i8;
@@ -349,10 +359,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
-		// Check if the desired range is valid
-		if start + length > 16 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self;
@@ -369,10 +376,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
-		// Check if the desired range is valid
-		if start + length > 16 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self as i16;
@@ -490,10 +494,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
-		// Check if the desired range is valid
-		if start + length > 32 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self;
@@ -510,10 +511,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
-		// Check if the desired range is valid
-		if start + length > 32 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self as i32;
@@ -638,10 +636,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 	}
 
 	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
-		// Check if the desired range is valid
-		if start + length > 64 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self;
@@ -659,9 +654,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
 		// Check if the desired range is valid
-		if start + length > 64 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_range!(start + length);
 
 		// Don't touch the original
 		let mut copy = self as i64;
@@ -1356,10 +1349,7 @@ pub trait SingleBits {
 
 impl SingleBits for u8 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
 
@@ -1373,10 +1363,7 @@ impl SingleBits for u8 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
 
@@ -1394,12 +1381,9 @@ impl SingleBits for u8 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
-		let a : u8 = 0b0111_1111; // Only the most significant bit is set.
+		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
 
 		// Shift it to the right according to the desired offset
 		let a = a.rotate_right(bit_offset);
@@ -1413,10 +1397,7 @@ impl SingleBits for u8 {
 
 impl SingleBits for i8 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
 
@@ -1430,10 +1411,7 @@ impl SingleBits for i8 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
 
@@ -1451,12 +1429,9 @@ impl SingleBits for i8 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 7 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
-		let a : u8 = 0b0111_1111; // Only the most significant bit is set.
+		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
 
 		// Shift it to the right according to the desired offset
 		let a = a.rotate_right(bit_offset);
@@ -1470,10 +1445,7 @@ impl SingleBits for i8 {
 
 impl SingleBits for u16 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1487,10 +1459,7 @@ impl SingleBits for u16 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1508,10 +1477,7 @@ impl SingleBits for u16 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
 
@@ -1527,10 +1493,7 @@ impl SingleBits for u16 {
 
 impl SingleBits for i16 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1544,10 +1507,7 @@ impl SingleBits for i16 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1565,10 +1525,7 @@ impl SingleBits for i16 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 15 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
 
@@ -1584,10 +1541,7 @@ impl SingleBits for i16 {
 
 impl SingleBits for u32 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1601,10 +1555,7 @@ impl SingleBits for u32 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1622,10 +1573,7 @@ impl SingleBits for u32 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
 
@@ -1641,10 +1589,7 @@ impl SingleBits for u32 {
 
 impl SingleBits for i32 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1658,10 +1603,7 @@ impl SingleBits for i32 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1679,10 +1621,7 @@ impl SingleBits for i32 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 31 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
 
@@ -1698,10 +1637,7 @@ impl SingleBits for i32 {
 
 impl SingleBits for u64 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1715,10 +1651,7 @@ impl SingleBits for u64 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1736,10 +1669,7 @@ impl SingleBits for u64 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
 
@@ -1755,10 +1685,7 @@ impl SingleBits for u64 {
 
 impl SingleBits for i64 {
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1772,10 +1699,7 @@ impl SingleBits for i64 {
 	}
 
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
 
@@ -1793,10 +1717,7 @@ impl SingleBits for i64 {
 	}
 
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
-		// Check if the desired range is valid
-		if bit_offset > 63 {
-			return Err(s!(OUT_OF_RANGE_MSG));
-		}
+		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
 
