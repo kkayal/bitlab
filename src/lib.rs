@@ -15,7 +15,7 @@
 //!
 //!# Version
 //!
-//!0.5.1
+//!0.5.2
 //!
 //!# Usage
 //!
@@ -296,8 +296,6 @@ impl ExtractBitsFromIntegralTypes for u8 {
 }
 
 impl ExtractBitsFromIntegralTypes for i8 {
-	// TODO: Check if the type conversions below have an impact to
-	// run-time performance or if it is better to optimise
 	#[inline]
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
 		(self as u8).get_u8(start, length)
@@ -819,6 +817,8 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (usize) the number of bits to be extracted.
 	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i32)>;
+
+	// TODO: Add get_u64 and get_i64
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
@@ -1164,7 +1164,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
-					copy6 <<= bit_offset + 32;
+					copy6 <<= 24 + bit_offset;
 
 					// Second, push it all to the right end
 					copy6 >>= 64 - length;
@@ -1293,7 +1293,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
-					copy6 <<= bit_offset + 32;
+					copy6 <<= 24 + bit_offset;
 
 					// Second, push it all to the right end
 					copy6 >>= 64 - length;
@@ -2345,7 +2345,7 @@ mod tests {
 
 	#[test]
 	fn extract_from_vector() {
-		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
+		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
 
 		//
 		// 8 Bit
@@ -2382,7 +2382,6 @@ mod tests {
 		//
 
 		// Simple 1 for get_u16
-		// TODO: Is this correct? : Byte offset 1 makes sure that we also test potential byte alignment issues
 		let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
@@ -2404,7 +2403,7 @@ mod tests {
 		let bar = v.get_i16(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
 		assert_eq!(bar.unwrap(), 15);
 
-		// Get a u16 from a range, which spans over 3 bytes
+		// Get a i16 from a range, which spans over 3 bytes
 		let bar = v.get_i16(1, 7, 10); // Relevant bytes = 0x61, 0x6C, 0x6C
 		assert_eq!(bar.unwrap(), -296); // 0b0110_000 --> 1_0110_1100_0 <-- 110_1100
 
@@ -2412,8 +2411,9 @@ mod tests {
 		// 32 Bit
 		//
 
+		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x65, 0x6C, 0x74, 0x21 };
+
 		// Simple 1 for get_u32
-		// TODO: Is this correct? : Byte offset 1 makes sure that we also test potential byte alignment issues
 		let bar = v.get_u32(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
@@ -2421,9 +2421,25 @@ mod tests {
 		let bar = v.get_u32(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
 		assert_eq!(bar.unwrap(), 15);
 
-		// Get a u32 from a range, which spans over 3 bytes
-		let bar = v.get_u32(1, 7, 10); // Relevant bytes = 0x61, 0x6C, 0x6C
-		assert_eq!(bar.unwrap(), 728); // 0b0110_000 --> 1_0110_1100_0 <-- 110_1100
+		// Simple 3 for get_u32
+		let bar = v.get_u32(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
+		assert_eq!(bar.unwrap(), 101723058);
+
+		// Simple 4 for get_u32
+		let bar = v.get_u32(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 1627568939);
+
+		// Simple 4 for get_u32
+		let bar = v.get_u32(5, 3, 16); // relevant bytes = 0x2C2057 = 0b001 --> 0_1100_0010_0000_010 <-- 1_0111
+		assert_eq!(bar.unwrap(), 24834);
+
+		// Simple 5 for get_u32
+		let bar = v.get_u32(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
+		assert_eq!(bar.unwrap(), 2);
+
+		// Get a u32 from a range, which spans over 5 bytes
+		let bar = v.get_u32(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
+		assert_eq!(bar.unwrap(), 47765726); // 0b0110_000 --> 1_0110_1100_0110_1100_0110_1111_0 <-- 010_1100
 
 		// Now signed integers
 
@@ -2435,12 +2451,23 @@ mod tests {
 		let bar = v.get_i32(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
 		assert_eq!(bar.unwrap(), 15);
 
-		// Get a u16 from a range, which spans over 3 bytes
-		let bar = v.get_i32(1, 7, 10); // Relevant bytes = 0x61, 0x6C, 0x6C
-		assert_eq!(bar.unwrap(), -296); // 0b0110_000 --> 1_0110_1100_0 <-- 110_1100
+		// Simple 3 for get_i32
+		let bar = v.get_i32(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
+		assert_eq!(bar.unwrap(), 101723058);
+
+		// Get a i32 from a range, which spans over 5 bytes
+		let bar = v.get_i32(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
+		assert_eq!(bar.unwrap(), -19343138); // 0b0110_000 --> 1_0110_1100_0110_1100_0110_1111_0 <-- 010_1100
+
+		//
+		// 64 Bit
+		//
+
+		// TODO: Add the 64 bit tests when they are implemented
+
+		// TODO: add more test cases. E.g. very big bit offsets
 	}
 
-	// TODO: add more test cases
 
 	#[test]
 	#[should_panic]
