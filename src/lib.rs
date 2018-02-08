@@ -2414,28 +2414,28 @@ mod tests {
 		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x65, 0x6C, 0x74, 0x21 };
 
 		// Simple 1 for get_u32
+		let bar = v.get_u32(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
+		assert_eq!(bar.unwrap(), 2);
+
+		// Simple 2 for get_u32
 		let bar = v.get_u32(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), 5);
 
-		// Simple 2 for get_u32
+		// Simple 3 for get_u32
 		let bar = v.get_u32(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
 		assert_eq!(bar.unwrap(), 15);
-
-		// Simple 3 for get_u32
-		let bar = v.get_u32(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
-		assert_eq!(bar.unwrap(), 101723058);
-
-		// Simple 4 for get_u32
-		let bar = v.get_u32(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
-		assert_eq!(bar.unwrap(), 1627568939);
 
 		// Simple 4 for get_u32
 		let bar = v.get_u32(5, 3, 16); // relevant bytes = 0x2C2057 = 0b001 --> 0_1100_0010_0000_010 <-- 1_0111
 		assert_eq!(bar.unwrap(), 24834);
 
 		// Simple 5 for get_u32
-		let bar = v.get_u32(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
-		assert_eq!(bar.unwrap(), 2);
+		let bar = v.get_u32(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
+		assert_eq!(bar.unwrap(), 101723058);
+
+		// Simple 6 for get_u32
+		let bar = v.get_u32(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 1627568939);
 
 		// Get a u32 from a range, which spans over 5 bytes
 		let bar = v.get_u32(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
@@ -2444,16 +2444,28 @@ mod tests {
 		// Now signed integers
 
 		// Simple 1 for get_i32
+		let bar = v.get_i32(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
+		assert_eq!(bar.unwrap(), 2);
+
+		// Simple 2 for get_i32
 		let bar = v.get_i32(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
 		assert_eq!(bar.unwrap(), -3);
 
-		// Simple 2 for get_i32
+		// Simple 3 for get_i32
 		let bar = v.get_i32(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
 		assert_eq!(bar.unwrap(), 15);
 
-		// Simple 3 for get_i32
+		// Simple 4 for get_i32
+		let bar = v.get_i32(5, 3, 16); // relevant bytes = 0x2C2057 = 0b001 --> 0_1100_0010_0000_010 <-- 1_0111
+		assert_eq!(bar.unwrap(), 24834);
+
+		// Simple 5 for get_i32
 		let bar = v.get_i32(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
 		assert_eq!(bar.unwrap(), 101723058);
+
+		// Simple 6 for get_i32
+		let bar = v.get_i32(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 1627568939);
 
 		// Get a i32 from a range, which spans over 5 bytes
 		let bar = v.get_i32(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
@@ -2464,8 +2476,6 @@ mod tests {
 		//
 
 		// TODO: Add the 64 bit tests when they are implemented
-
-		// TODO: add more test cases. E.g. very big bit offsets
 	}
 
 
@@ -2480,6 +2490,7 @@ mod tests {
 		//
 		// Unsigned 8 bit
 		//
+
 		let a: u8 = 0b0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2504,6 +2515,7 @@ mod tests {
 		//
 		// Unsigned 16 bit
 		//
+
 		let a: u16 = 0b0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2528,6 +2540,7 @@ mod tests {
 		//
 		// Unsigned 32 bit
 		//
+
 		let a: u32 = 0b0000_0000_0000_0000_0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2552,6 +2565,7 @@ mod tests {
 		//
 		// Unsigned 64 bit
 		//
+
 		let a: u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2576,6 +2590,7 @@ mod tests {
 		//
 		// Signed 8 bit
 		//
+
 		let a: i8 = 0b0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2600,6 +2615,7 @@ mod tests {
 		//
 		// Signed 16 bit
 		//
+
 		let a: i16 = 0b0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2624,6 +2640,7 @@ mod tests {
 		//
 		// Signed 32 bit
 		//
+
 		let a: i32 = 0b0000_0000_0000_0000_0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
@@ -2648,6 +2665,7 @@ mod tests {
 		//
 		// Signed 64 bit
 		//
+
 		let a: i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0101;
 
 		// Test a single bit. The most significant bit has the bit offset 0
