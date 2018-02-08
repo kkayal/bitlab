@@ -15,7 +15,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.5.2
+0.5.3
 
 # Usage
 
