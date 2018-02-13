@@ -3,7 +3,7 @@
 //!
 //!# Objective:
 //!
-//!To extract a range of bits from a binary data source
+//!To extract a range of bits from a binary data source or to insert a range of bits into a binary data structure
 //!
 //!# Status
 //!
@@ -15,11 +15,11 @@
 //!
 //!# Version
 //!
-//!0.5.3
+//!0.6.0
 //!
 //!# Usage
 //!
-//!1. In your Cargo.toml file, add `bitlab = "0.5"` under `[dependencies]`
+//!1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
 //!2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 //!
 //!## Example 1: 
@@ -65,6 +65,16 @@
 //!
 //!## Example 4:
 //!
+//!Insert a 2 bit unsigned integer value (b = 3) into a variable starting at the bit offset 1, where the offset = zero is the **most** significant bit.
+//!
+//!```rust
+//!use bitlab::*;
+//!let a : u8 = 0;
+//!let b : u8 = 3;
+//!assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+//!```
+//!## Example 5:
+//!
 //!There is a very simple application in the examples directory,
 //!which extracts the color resolution from a real gif file.
 //!To run it enter the following in the command line
@@ -97,6 +107,40 @@ static LEN_TOO_BIG_MSG: &str = "The length parameter is too big for a ";
 // Shortens the return type in function signatures
 type Result<T> = std::result::Result<T, String>;
 
+
+/// A trait to get the data type as a string for a integer and floating point types.
+pub trait TypeInfo {
+	// Thanks to https://stackoverflow.com/questions/21747136/how-do-i-print-the-type-of-a-variable-in-rust
+	/// Returns the variable type as a string 
+	fn type_of(&self) -> &'static str;
+}
+
+impl TypeInfo for u8  { fn type_of(&self) -> &'static str {"u8"}  }
+impl TypeInfo for u16 { fn type_of(&self) -> &'static str {"u16"} }
+impl TypeInfo for u32 { fn type_of(&self) -> &'static str {"u32"} }
+impl TypeInfo for u64 { fn type_of(&self) -> &'static str {"u64"} }
+impl TypeInfo for i8  { fn type_of(&self) -> &'static str {"i8"}  }
+impl TypeInfo for i16 { fn type_of(&self) -> &'static str {"i16"} }
+impl TypeInfo for i32 { fn type_of(&self) -> &'static str {"i32"} }
+impl TypeInfo for i64 { fn type_of(&self) -> &'static str {"i64"} }
+impl TypeInfo for f32 { fn type_of(&self) -> &'static str {"f32"} }
+impl TypeInfo for f64 { fn type_of(&self) -> &'static str {"f64"} }
+
+/// A trait to find out if a varibale type is signed or unsigned for integer types.
+pub trait SignedInfo{
+	/// Returns true if the variable is signed.
+	fn is_signed(&self) -> bool;
+}
+
+impl SignedInfo for u8  { fn is_signed(&self) -> bool { false } }
+impl SignedInfo for u16 { fn is_signed(&self) -> bool { false } }
+impl SignedInfo for u32 { fn is_signed(&self) -> bool { false } }
+impl SignedInfo for u64 { fn is_signed(&self) -> bool { false } }
+impl SignedInfo for i8  { fn is_signed(&self) -> bool { true  } }
+impl SignedInfo for i16 { fn is_signed(&self) -> bool { true  } }
+impl SignedInfo for i32 { fn is_signed(&self) -> bool { true  } }
+impl SignedInfo for i64 { fn is_signed(&self) -> bool { true  } }
+
 // Convinience macro to shorten String::from("hello") to s!("hello")
 macro_rules! s {
 	( $x:expr ) => { String::from($x); };
@@ -118,6 +162,28 @@ macro_rules! check_range {
 	}
 }
 
+/// How many bits does it take to write an unsigned integer?
+pub fn n_required_bits_for_an_unsigned_int(num: u64) -> usize {
+	// TODO: The performance can be probaly improved by a clever lookup strategy
+	let i = num as f64;
+	let j = i.log2();
+	if j > 0_f64 {
+		j.floor() as usize + 1
+	}
+	else { 1 }
+}
+
+/// How many bits does it take to write a signed integer?
+pub fn n_required_bits_for_a_signed_int(num: i64) -> usize {
+	// TODO: The performance can be probaly improved by a clever lookup strategy
+	let i = num as f64;
+	let j = i.abs().log2();
+	if j > 0_f64 {
+		j.ceil() as usize + 1
+	}
+	else { 1 }
+}
+
 /// Defines a number of functions, which extract a range of bits from
 /// primitive numeric types (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
 /// the result as one of the following types (u8, u16, u32 and u64, i8, i16, i32 and i64)
@@ -125,11 +191,6 @@ macro_rules! check_range {
 /// the variable a and returns the result as a u8 variable
 pub trait ExtractBitsFromIntegralTypes {
 /// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value as a **u8**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 8)
 ///
 /// Parameters:
 ///
@@ -139,11 +200,6 @@ fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
-/// On success, the Result contains the desired value as a **u16**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 16)
-///
 /// Parameters:
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
@@ -151,11 +207,6 @@ fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
 fn get_u16(self, start: usize, length: usize) -> Result<(u16)>;
 
 /// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value as a **u32**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 32)
 ///
 /// Parameters:
 ///
@@ -165,11 +216,6 @@ fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
-/// On success, the Result contains the desired value as a **u64**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 64)
-///
 /// Parameters:
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
@@ -177,11 +223,6 @@ fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
 fn get_u64(self, start: usize, length: usize) -> Result<(u64)>;
 
 /// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value as a **i8**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 8)
 ///
 /// Parameters:
 ///
@@ -191,11 +232,6 @@ fn get_i8(self, start: usize, length: usize) -> Result<(i8)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
-/// On success, the Result contains the desired value as a **i16**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 16)
-///
 /// Parameters:
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
@@ -204,11 +240,6 @@ fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
 
 /// Extracts a range of bits and returns a Result object.
 ///
-/// On success, the Result contains the desired value as a **i32**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 32)
-///
 /// Parameters:
 ///
 /// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
@@ -216,11 +247,6 @@ fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
 fn get_i32(self, start: usize, length: usize) -> Result<(i32)>;
 
 /// Extracts a range of bits and returns a Result object.
-///
-/// On success, the Result contains the desired value as a **i64**
-///
-/// On error, the Result contains an error message.
-/// This may happen if the range is larger than the data source (start + length > 64)
 ///
 /// Parameters:
 ///
@@ -718,13 +744,6 @@ impl ExtractBitsFromIntegralTypes for i64 {
 pub trait ExtractBitsFromVecU8 {
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 8 bit unsigned integer or an error message.
 	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 8
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
-	///
 	/// Parameters:
 	///
 	/// - **byte_offset** (usize) the number of bytes to skip in source
@@ -733,13 +752,6 @@ pub trait ExtractBitsFromVecU8 {
 	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u8)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 8 bit integer or an error message.
-	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 8
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
 	///
 	/// Parameters:
 	///
@@ -750,13 +762,6 @@ pub trait ExtractBitsFromVecU8 {
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer or an error message.
 	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 16
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
-	///
 	/// Parameters:
 	///
 	/// - **byte_offset** (usize) the number of bytes to skip in source
@@ -765,13 +770,6 @@ pub trait ExtractBitsFromVecU8 {
 	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u16)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 16 bit integer or an error message.
-	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 16
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
 	///
 	/// Parameters:
 	///
@@ -782,13 +780,6 @@ pub trait ExtractBitsFromVecU8 {
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer or an error message.
 	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 32
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
-	///
 	/// Parameters:
 	///
 	/// - **byte_offset** (usize) the number of bytes to skip in source
@@ -797,13 +788,6 @@ pub trait ExtractBitsFromVecU8 {
 	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u32)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 32 bit integer or an error message.
-	///
-	/// On success, the Result contains the desired value 
-	///
-	/// On error, the Result contains an error message. This may happen if:
-	///
-	/// - length > 32
-	/// - byte_offset * 8 + bit_offset + length > vector (source data) size in bits
 	///
 	/// Parameters:
 	///
@@ -1350,14 +1334,9 @@ pub trait SingleBits {
 
 	/// Sets a single bit and returns a Result object, which contains the modified variable
 	///
-	/// On success, the Result object contains the desired value
-	///
-	/// On error, the Result object contains an error message.
-	/// This may happen if the bit_offset is larger than the data source (bit_offset > variable size)
-	///
 	/// Parameters:
 	///
-	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
 	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
 
 	/// Tests a single bit and returns true or false in a Result object
@@ -1367,19 +1346,14 @@ pub trait SingleBits {
 	///
 	/// Parameters:
 	///
-	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
 	fn get_bit(self, bit_offset: u32) -> Result<(bool)>;
 
 	/// Clears a single bit and then returns a Result Object, which contains the modified varibale
 	///
-	/// On success, the Rsult object contains the desired value
-	///
-	/// On error, the Result object contains an error message.
-	/// This may happen if the bit_offset is larger than the data source (bit_offset > variable size)
-	///
 	/// Parameters:
 	///
-	/// - **bit_offset** (u8) the offset of the bit to be set. Zero is the **MOST** significant bit.
+	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
 }
 
@@ -1421,7 +1395,7 @@ impl SingleBits for u8 {
 
 		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
 
-		// Shift it to the right according to the desired offset
+		// Rotate it to the right according to the desired offset
 		let a = a.rotate_right(bit_offset);
 
 		let mut copy = self;
@@ -1707,7 +1681,7 @@ impl SingleBits for u64 {
 	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
-		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
+		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
 
 		// Shift it to the right according to the desired offset
 		let a = a.rotate_right(bit_offset);
@@ -1765,6 +1739,187 @@ impl SingleBits for i64 {
 
 		Ok(copy as i64)
 	}
+}
+
+/// Defines a number of functions, which insert any integer value
+/// into any integer type (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
+/// the result as the same type.
+///
+/// E.g. a.set_u8(1, 2, b) inserts the last two bits of b into a, starting at the
+/// bit offset 1, where the bit offset zero is defined as the **most** significant bit.
+/// All other bits of a, remain untouched.
+///
+/// Example1:
+/// let a : u8 = 0;
+/// let b : u16 = 3;
+/// assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+///
+/// Example2:
+/// let a : u8 = 0b0110_0011;
+/// let b : u8 = 2;
+/// assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101);
+pub trait InsertBitsIntoIntegralTypes {
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (u8) the value to be inserted.
+	fn set_u8(self, start: usize, length: usize, value: u8) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (i8) the value to be inserted.
+	fn set_i8(self, start: usize, length: usize, value: i8) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (u16) the value to be inserted.
+	fn set_u16(self, start: usize, length: usize, value: u16) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (i16) the value to be inserted.
+	fn set_i16(self, start: usize, length: usize, value: i16) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (u32) the value to be inserted.
+	fn set_u32(self, start: usize, length: usize, value: u32) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (i32) the value to be inserted.
+	fn set_i32(self, start: usize, length: usize, value: i32) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (u64) the value to be inserted.
+	fn set_u64(self, start: usize, length: usize, value: u64) -> Result<(Self)> where Self: std::marker::Sized;
+
+	/// Inserts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be overwritten.
+	/// - **value** (i64) the value to be inserted.
+	fn set_i64(self, start: usize, length: usize, value: i64) -> Result<(Self)> where Self: std::marker::Sized;
+}
+
+// The first parameter ($n) is the function name and
+// the second one is the variable type to be inserted ($t)
+macro_rules! def_set_fn {
+	($n:tt, $t:ty) => (
+		fn $n(self, start: usize, length: usize, value: $t) -> Result<(Self)> {
+			let mut value_copy = value;
+			let mut result = self;
+
+			// Range checks
+			if length > std::mem::size_of::<Self>() * 8 {
+				return Err(s!(LEN_TOO_BIG_MSG) + TypeInfo::type_of(&self));
+			}
+
+			check_range!(start + length);
+
+			if value.is_signed() {
+				let n = n_required_bits_for_a_signed_int(value as i64);
+				if n > length {
+					return Err(format!("Cannot insert {} as a {} bit signed integer variable, since it requires at least {} bits.",
+						&value.to_string(), &length.to_string(), &n.to_string()))
+				}
+			} else {
+				let n = n_required_bits_for_an_unsigned_int(value as u64);
+				if n > length {
+					return Err(format!("Cannot insert {} as a {} bit unsigned integer variable, since it requires at least {} bits.",
+						&value.to_string(), &length.to_string(), &n.to_string()))
+				}
+			}
+
+			value_copy <<= std::mem::size_of_val(&value) as u8 * 8 - (start + length) as u8;
+			for i in start .. start + length {
+				if value_copy.get_bit(i as u32)? {
+					result = result.set_bit(i as u32)?;
+				} else {
+					result = result.clear_bit(i as u32)?;
+				}
+			}
+			Ok(result)
+		}
+	)
+}
+
+impl InsertBitsIntoIntegralTypes for u8 {
+	def_set_fn!(set_u8,  u8);
+	def_set_fn!(set_u16, u16);
+	def_set_fn!(set_u32, u32);
+	def_set_fn!(set_u64, u64);
+
+	def_set_fn!(set_i8,  i8);
+	def_set_fn!(set_i16, i16);
+	def_set_fn!(set_i32, i32);
+	def_set_fn!(set_i64, i64);
+}
+
+impl InsertBitsIntoIntegralTypes for u16 {
+	def_set_fn!(set_u8,  u8);
+	def_set_fn!(set_u16, u16);
+	def_set_fn!(set_u32, u32);
+	def_set_fn!(set_u64, u64);
+
+	def_set_fn!(set_i8,  i8);
+	def_set_fn!(set_i16, i16);
+	def_set_fn!(set_i32, i32);
+	def_set_fn!(set_i64, i64);
+}
+
+impl InsertBitsIntoIntegralTypes for u32 {
+	def_set_fn!(set_u8,  u8);
+	def_set_fn!(set_u16, u16);
+	def_set_fn!(set_u32, u32);
+	def_set_fn!(set_u64, u64);
+
+	def_set_fn!(set_i8,  i8);
+	def_set_fn!(set_i16, i16);
+	def_set_fn!(set_i32, i32);
+	def_set_fn!(set_i64, i64);
+}
+
+impl InsertBitsIntoIntegralTypes for u64 {
+	def_set_fn!(set_u8,  u8);
+	def_set_fn!(set_u16, u16);
+	def_set_fn!(set_u32, u32);
+	def_set_fn!(set_u64, u64);
+
+	def_set_fn!(set_i8,  i8);
+	def_set_fn!(set_i16, i16);
+	def_set_fn!(set_i32, i32);
+	def_set_fn!(set_i64, i64);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1850,12 +2005,12 @@ mod tests {
 		// Start & Length would be OK for the output, but not for the source
 		match a.get_u8(2, 12) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_i8(2, 12) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		//
@@ -1866,12 +2021,12 @@ mod tests {
 
 		match a.get_u8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_u16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u16"),
 		}
 
 		match a.get_u32(20, 30) {
@@ -1886,12 +2041,12 @@ mod tests {
 
 		match a.get_i8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		match a.get_i16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i16"),
 		}
 
 		match a.get_i32(20, 30) {
@@ -1912,17 +2067,17 @@ mod tests {
 
 		match a.get_u8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_u16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u16"),
 		}
 
 		match a.get_u32(0, 33) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u32"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u32"),
 		}
 
 		match a.get_u64(0, 70) {
@@ -1937,17 +2092,17 @@ mod tests {
 
 		match a.get_i8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		match a.get_i16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i16"),
 		}
 
 		match a.get_i32(0, 33) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i32"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i32"),
 		}
 
 		match a.get_i64(0, 70) {
@@ -2031,12 +2186,12 @@ mod tests {
 		// Start & Length would be OK for the output, but not for the source
 		match a.get_u8(2, 12) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_i8(2, 12) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		//
@@ -2047,12 +2202,12 @@ mod tests {
 
 		match a.get_u8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_u16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u16"),
 		}
 
 		match a.get_u32(20, 30) {
@@ -2067,12 +2222,12 @@ mod tests {
 
 		match a.get_i8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		match a.get_i16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i16"),
 		}
 
 		match a.get_i32(20, 30) {
@@ -2093,17 +2248,17 @@ mod tests {
 
 		match a.get_u8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u8"),
 		}
 
 		match a.get_u16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u16"),
 		}
 
 		match a.get_u32(0, 33) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a u32"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "u32"),
 		}
 
 		match a.get_u64(0, 70) {
@@ -2118,17 +2273,17 @@ mod tests {
 
 		match a.get_i8(20, 9) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i8"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i8"),
 		}
 
 		match a.get_i16(0, 18) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i16"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i16"),
 		}
 
 		match a.get_i32(0, 33) {
 			Ok(_) => panic!("Missed the range check"),
-			Err(e) => assert_eq!(e, "The length parameter is too big for a i32"),
+			Err(e) => assert_eq!(e, s!(LEN_TOO_BIG_MSG) + "i32"),
 		}
 
 		match a.get_i64(0, 70) {
@@ -2758,5 +2913,856 @@ mod tests {
 
 		// Clear the same bit again
 		assert_eq!(a.clear_bit(b).unwrap(), 5);
+	}
+
+	#[test]
+	fn inserting_8_bit_vars_into_u8() {
+		let a : u8 = 0;
+		let b : u8 = 3;
+		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+
+		let a : u8 = 0b0110_0011;
+		let b : u8 = 0b0000_0010;
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_u8(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_u8(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = 5;
+		match a.set_u8(5, 2, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+		}
+
+		// b as positive signed integer
+		let a : u8 = 0b0110_0011;
+		let b : i8 = 0b0000_0010;
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
+
+		// b as negative signed integer
+		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i8 = -2;
+		assert_eq!(  0b1111_1110 as u8 as i8, b);
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
+
+		match a.set_i8(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_i8(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = -5;
+		match a.set_i8(5, 2, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+		}
+	}
+
+	#[test]
+	fn inserting_8_bit_vars_into_u16() {
+
+		let a : u16 = 0;
+		let b : u8  = 3;
+		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+
+		let a : u16 = 0b0110_0011_0000_0000;
+		let b : u8  = 0b0000_0010;
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_u8(5, 18, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_u8(5, 15, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = 5;
+		match a.set_u8(5, 2, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+		}
+
+		// b as positive signed integer
+		let a : u16 = 0b0110_0011_0000_0110;
+		let b : i8 =  0b0000_0010;
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+
+		// b as negative signed integer
+		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i8 = -2;
+		assert_eq!(  0b1111_1110 as u8 as i8, b);
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_i8(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_i8(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = -5;
+		match a.set_i8(5, 2, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+		}
+	}
+
+	#[test]
+	fn inserting_8_bit_vars_into_u32() {
+
+		let a : u32 = 0;
+		let b : u8  = 3;
+		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u32 = 0b0110_0011_0000_0000_0000_0000_0000_0000;
+		let b : u8  = 0b0000_0010;
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_u8(5, 40, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_u8(5, 30, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = 5;
+		match a.set_u8(5, 2, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+		}
+
+		// b as positive signed integer
+		let a : u32 = 0b0110_0011_0000_0110_0110_0011_0000_0110;
+		let b : i8 =  0b0000_0010;
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+
+		// b as negative signed integer
+		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i8 = -2;
+		assert_eq!(  0b1111_1110 as u8 as i8, b);
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_i8(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_i8(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = -5;
+		match a.set_i8(5, 2, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+		}
+	}
+
+	#[test]
+	fn inserting_8_bit_vars_into_u64() {
+		let a : u64 = 0;
+		let b : u8  = 3;
+		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u64 = 0b0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : u8  = 0b0000_0010;
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_u8(5, 80, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_u8(5, 60, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = 5;
+		match a.set_u8(5, 2, b) {
+			Ok(_)  => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+		}
+
+		// b as positive signed integer
+		let a : u64 = 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : i8 =  0b0000_0010;
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i8 = -2;
+		assert_eq!(  0b1111_1110 as u8 as i8, b);
+		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_i8(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_i8(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// The _length_ parameter must not be smaller than the number of bits,
+		// which is required to represent _value_
+		let b = -5;
+		match a.set_i8(5, 2, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+		}
+	}
+
+	#[test]
+	fn inserting_16_bit_vars_into_u8() {
+		let a : u8 = 0;
+		let b : u16 = 3;
+		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000);
+
+		let a : u8 = 0b0110_0011;
+		let b : u16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_u16(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_u16(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u8 = 0b0110_0011;
+		let b : i16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
+
+		// b as negative signed integer
+		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i16'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i16 = -2;
+		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_i16(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_i16(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_16_bit_vars_into_u16() {
+		let a : u16 = 0;
+		let b : u16 = 3;
+		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+
+		let a : u16 = 0b0110_0011_0000_1110;
+		let b : u16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_u16(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_u16(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u16 = 0b0110_0011_0000_1110;
+		let b : i16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+
+		// b as negative signed integer
+		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i16 = -2;
+		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_i16(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_i16(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_16_bit_vars_into_u32() {
+		let a : u32 = 0;
+		let b : u16 = 3;
+		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u32 = 0b0110_0011_0000_1110_0000_0000_0000_0000;
+		let b : u16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_u16(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_u16(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u32 = 0b0110_0011_0000_1110_0000_0000_0000_0000;
+		let b : i16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i16 = -2;
+		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_i16(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_i16(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_16_bit_vars_into_u64() {
+		let a : u64 = 0;
+		let b : u16 = 3;
+		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u64 = 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : u16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_u16(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_u16(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u64 = 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : i16 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i16 = -2;
+		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
+		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_i16(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_i16(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_32_bit_vars_into_u8() {
+		let a : u8 = 0;
+		let b : u32 = 3;
+		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000);
+
+		let a : u8 = 0b0110_0011;
+		let b : u32 = 0b0000_0000_0000_0010;
+		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_u32(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_u32(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u8 = 0b0110_0011;
+		let b : i32 = 0b0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
+
+		// b as negative signed integer
+		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i32 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_i32(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_i32(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_32_bit_vars_into_u16() {
+		let a : u16 = 0;
+		let b : u32 = 3;
+		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+
+		let a : u16 = 0b0000_0000_0110_0011;
+		let b : u32 = 2;
+		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_u32(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_u32(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u16 = 0b0000_0000_0110_0011;
+		let b : i32 = 2;
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// b as negative signed integer
+		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i32 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_i32(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_i32(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_32_bit_vars_into_u32() {
+		let a : u32 = 0;
+		let b : u32 = 3;
+		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
+		let b : u32 = 2;
+		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_u32(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_u32(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
+		let b : i32 = 2;
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i32 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_i32(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_i32(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_32_bit_vars_into_u64() {
+		let a : u64 = 0;
+		let b : u32 = 3;
+		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : u32 = 2;
+		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_u32(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_u32(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : i32 = 2;
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i32 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
+		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_i32(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_i32(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_64_bit_vars_into_u8() {
+		let a : u8 = 0;
+		let b : u64 = 3;
+		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000);
+
+		let a : u8 = 0b0110_0011;
+		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_u64(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_u64(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u8 = 0b0110_0011;
+		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
+
+		// b as negative signed integer
+		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i64 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
+
+		// You cannot insert 9 bits into an u8
+		match a.set_i64(5, 9, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
+		}
+
+		// start + length must not exceed 8 bit (size of u8)
+		match a.set_i64(5, 8, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_64_bit_vars_into_u16() {
+		let a : u16 = 0;
+		let b : u64 = 3;
+		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+
+		let a : u16 = 0b0000_0000_0110_0011;
+		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_u64(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_u64(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u16 = 0b0000_0000_0110_0011;
+		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// b as negative signed integer
+		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i64 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// You cannot insert 18 bits into an u16
+		match a.set_i64(5, 18, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
+		}
+
+		// start + length must not exceed 16 bit (size of u16)
+		match a.set_i64(5, 15, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_64_bit_vars_into_u32() {
+		let a : u32 = 0;
+		let b : u64 = 3;
+		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
+		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_u64(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_u64(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
+		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i64 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// You cannot insert 40 bits into an u32
+		match a.set_i64(5, 40, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
+		}
+
+		// start + length must not exceed 32 bit (size of u32)
+		match a.set_i64(5, 30, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn inserting_64_bit_vars_into_u64() {
+		let a : u64 = 0;
+		let b : u64 = 3;
+		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_u64(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_u64(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+
+		// b as positive signed integer
+		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// b as negative signed integer
+		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
+		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		let b : i64 = -2;
+		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// You cannot insert 80 bits into an u64
+		match a.set_i64(5, 80, b) {
+			Ok(_) => panic!("The range check failed to detect invalid length"),
+			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
+		}
+
+		// start + length must not exceed 64 bit (size of u64)
+		match a.set_i64(5, 60, b) {
+			Ok(_) => panic!("The range check failed to detect invalid range"),
+			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
+		}
+	}
+
+	#[test]
+	fn test_number_of_bits_required_for_an_unsinged_integer() {
+		assert_eq!(n_required_bits_for_an_unsigned_int(0), 1);
+		assert_eq!(n_required_bits_for_an_unsigned_int(1), 1);
+		assert_eq!(n_required_bits_for_an_unsigned_int(2), 2);
+		assert_eq!(n_required_bits_for_an_unsigned_int(3), 2);
+		assert_eq!(n_required_bits_for_an_unsigned_int(4), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(5), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(6), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(7), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(8), 4);
+		assert_eq!(n_required_bits_for_an_unsigned_int(255), 8);
+		assert_eq!(n_required_bits_for_an_unsigned_int(256), 9);
+	}
+
+	#[test]
+	fn test_number_of_bits_required_for_a_singed_integer() {
+		assert_eq!(n_required_bits_for_a_signed_int(0), 1);
+		assert_eq!(n_required_bits_for_a_signed_int(-1), 1);
+		assert_eq!(n_required_bits_for_a_signed_int(-2), 2);
+		assert_eq!(n_required_bits_for_a_signed_int(-3), 3);
+		assert_eq!(n_required_bits_for_a_signed_int(-4), 3);
+		assert_eq!(n_required_bits_for_a_signed_int(-5), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-6), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-7), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-8), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-63), 7);
+		assert_eq!(n_required_bits_for_a_signed_int(-64), 7);
+		assert_eq!(n_required_bits_for_a_signed_int(-65), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-127), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-128), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-129), 9);
 	}
 }

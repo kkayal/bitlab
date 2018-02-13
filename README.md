@@ -3,7 +3,7 @@
 
 # Objective:
 
-To extract a range of bits from a binary data source
+To extract a range of bits from a binary data source or to insert a range of bits into a binary data structure
 
 # Status
 
@@ -15,11 +15,11 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.5.3
+0.6.0
 
 # Usage
 
-1. In your Cargo.toml file, add `bitlab = "0.5"` under `[dependencies]`
+1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 
 ## Example 1: 
@@ -64,6 +64,17 @@ assert_eq!(bar.unwrap(), 5);
 ```
 
 ## Example 4:
+
+Insert a 2 bit unsigned integer value (b = 3) into a variable starting at the bit offset 1, where the offset = zero is the **most** significant bit.
+
+```rust
+use bitlab::*;
+let a : u8 = 0;
+let b : u8 = 3;
+assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+```
+
+## Example 5:
 
 There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the folloeing in the command line
 
