@@ -1,97 +1,110 @@
-//![![Travis Build Status](https://api.travis-ci.org/kkayal/bitlab.svg?branch=master)](https://travis-ci.org/kkayal/bitlab)
-//![![Build status](https://ci.appveyor.com/api/projects/status/drb2hj2hy1bcs9ve?svg=true)](https://ci.appveyor.com/project/kkayal/bitlab)
-//!
-//!# Objective:
-//!
-//!To extract a range of bits from a binary data source or to insert a range of bits into a binary data structure
-//!
-//!# Status
-//!
-//!Experimental
-//!
-//!# Documentation
-//!
-//!This crate is published at [crates.io](https://crates.io/crates/bitlab). The detailed documentation is available at [docs.rs/bitlab](https://docs.rs/bitlab/)
-//!
-//!# Version
-//!
-//!0.6.0
-//!
-//!# Usage
-//!
-//!1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
-//!2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
-//!
-//!## Example 1: 
-//!
-//!Start at bit offset 1, extract 3 bits and interpret the result as u8
-//!
-//!```rust
-//!use bitlab::*;
-//!let a: i8 = -33; // = 0b1101_1111;
-//!let b = a.get_u8(1, 3).unwrap();  // 1 --> 101 <-- 1111
-//!//                                         = 5
-//!assert_eq!(b, 5);
-//!```
-//!
-//!## Example 2:
-//!
-//!```rust
-//!use bitlab::*;
-//!let a: u8 = 0b0000_0101;
-//!
-//!// Get the most significant bit. It has the bit offset 0
-//!assert_eq!(a.get_bit(0).unwrap(), false);
-//!
-//!// Set the most significant bit. Expect 0b1000_0101
-//!assert_eq!(a.set_bit(0).unwrap(), 133);
-//!
-//!// Clear the most significant bit. Expect 0b0000_0101
-//!assert_eq!(a.clear_bit(0).unwrap(), 5);
-//!```
-//!
-//!## Example 3: 
-//!
-//!The data source is a vector of u8 types. We want to go to byte offset 1, 
-//!bit offset 7 and starting from there extract 3 bits as an u16
-//!
-//!```rust
-//!use bitlab::*;
-//!let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
-//!let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110_000  --> 1_01 <-- 10_1100
-//!//                                                                         = 5
-//!assert_eq!(bar.unwrap(), 5);
-//!```
-//!
-//!## Example 4:
-//!
-//!Insert a 2 bit unsigned integer value (b = 3) into a variable starting at the bit offset 1, where the offset = zero is the **most** significant bit.
-//!
-//!```rust
-//!use bitlab::*;
-//!let a : u8 = 0;
-//!let b : u8 = 3;
-//!assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
-//!```
-//!## Example 5:
-//!
-//!There is a very simple application in the examples directory,
-//!which extracts the color resolution from a real gif file.
-//!To run it enter the following in the command line
-//!
-//!```cli
-//!cargo run --release --example gif
-//!```
-//!
-//!# MIT Licence
-//!
+//! [![Travis Build Status](https://api.travis-ci.org/kkayal/bitlab.svg?branch=master)](https://travis-ci.org/kkayal/bitlab)
+//! [![Build status](https://ci.appveyor.com/api/projects/status/drb2hj2hy1bcs9ve?svg=true)](https://ci.appveyor.com/project/kkayal/bitlab)
+//! 
+//! # Objective:
+//! 
+//! To extract a range of bits from a binary data source or to insert a range of bits into a binary data structure
+//! 
+//! # Status
+//! 
+//! Experimental
+//! 
+//! # Documentation
+//! 
+//! This crate is published at [crates.io](https://crates.io/crates/bitlab).
+//! The detailed documentation is available at [docs.rs/bitlab](https://docs.rs/bitlab/)
+//! 
+//! # Version
+//! 
+//! 0.6.0
+//! 
+//! # Usage
+//! 
+//! 1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
+//! 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
+//! 
+//! ## Example 1: 
+//! 
+//! Start at bit offset 1, extract 3 bits and interpret the result as u8
+//! 
+//! ```rust
+//! use bitlab::*;
+//! let a: i8 = -33; // = 0b1101_1111;
+//! let b = a.get_u8(1, 3).unwrap();  // 1 --> 101 <-- 1111
+//! //                                         = 5
+//! assert_eq!(b, 5);
+//! ```
+//! 
+//! ## Example 2:
+//! 
+//! ```rust
+//! use bitlab::*;
+//! let a: u8 = 0b0000_0101;
+//! 
+//! // Get the most significant bit. It has the bit offset 0
+//! assert_eq!(a.get_bit(0).unwrap(), false);
+//! 
+//! // Set the most significant bit. Expect 0b1000_0101
+//! assert_eq!(a.set_bit(0).unwrap(), 133);
+//! 
+//! // Clear the most significant bit. Expect 0b0000_0101
+//! assert_eq!(a.clear_bit(0).unwrap(), 5);
+//! ```
+//! 
+//! ## Example 3: 
+//! 
+//! The data source is a vector of u8 types. We want to go to byte offset 1, 
+//! bit offset 7 and starting from there extract 3 bits as an u16
+//! 
+//! ```rust
+//! use bitlab::*;
+//! let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F }; // = "Hallo"
+//! let bar = v.get_u16(1, 7, 3); // relevant bytes = 0x616C = 0b0110_000  --> 1_01 <-- 10_1100
+//! //                                                                         = 5
+//! assert_eq!(bar.unwrap(), 5);
+//! ```
+//! 
+//! ## Example 4:
+//! 
+//! Insert a 2 bit unsigned integer value (b = 3) into a variable starting at
+//! the bit offset 1, where the offset = zero is the **most** significant bit.
+//! 
+//! ```rust
+//! use bitlab::*;
+//! let a : u8 = 0;
+//! let b : u8 = 3;
+//! assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+//! ```
+//! ## Example 5:
+//! 
+//! There is a very simple application in the examples directory,
+//! which extracts the color resolution from a real gif file.
+//! To run it enter the following in the command line
+//! 
+//! ```cli
+//! cargo run --release --example gif
+//! ```
+//! 
+//! # MIT Licence
+//! 
 //! Copyright <2017, Kağan Kayal>
-//!
-//! Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-//!
-//! The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-//!
-//! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//! 
+//! Permission is hereby granted, free of charge, to any person obtaining a
+//! copy of this software and associated documentation files (the "Software"),
+//! to deal in the Software without restriction, including without limitation
+//! the rights to use, copy, modify, merge, publish, distribute, sublicense,
+//! and/or sell copies of the Software, and to permit persons to whom the
+//! Software is furnished to do so, subject to the following conditions:
+//! 
+//! The above copyright notice and this permission notice shall be included in all
+//! copies or substantial portions of the Software.
+//! 
+//! THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//! EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//! FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//! AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//! WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\
+//! CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #![warn(missing_docs)]
 
@@ -190,69 +203,69 @@ pub fn n_required_bits_for_a_signed_int(num: i64) -> usize {
 /// E.g. the a.get_u8(5,3) function extracts the bits 5,6 and 7 of
 /// the variable a and returns the result as a u8 variable
 pub trait ExtractBitsFromIntegralTypes {
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_u16(self, start: usize, length: usize) -> Result<(u16)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_u16(self, start: usize, length: usize) -> Result<(u16)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_u64(self, start: usize, length: usize) -> Result<(u64)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_u64(self, start: usize, length: usize) -> Result<(u64)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_i8(self, start: usize, length: usize) -> Result<(i8)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_i8(self, start: usize, length: usize) -> Result<(i8)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_i32(self, start: usize, length: usize) -> Result<(i32)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_i32(self, start: usize, length: usize) -> Result<(i32)>;
 
-/// Extracts a range of bits and returns a Result object.
-///
-/// Parameters:
-///
-/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-/// - **length** (usize) the number of bits to be extracted.
-fn get_i64(self, start: usize, length: usize) -> Result<(i64)>;
+	/// Extracts a range of bits and returns a Result object.
+	///
+	/// Parameters:
+	///
+	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (usize) the number of bits to be extracted.
+	fn get_i64(self, start: usize, length: usize) -> Result<(i64)>;
 }
 
 impl ExtractBitsFromIntegralTypes for u8 {
@@ -1331,7 +1344,6 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 /// Defines a set of functions to get, set and clear single bits
 pub trait SingleBits {
-
 	/// Sets a single bit and returns a Result object, which contains the modified variable
 	///
 	/// Parameters:
@@ -1386,7 +1398,7 @@ impl SingleBits for u8 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1434,7 +1446,7 @@ impl SingleBits for i8 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1482,7 +1494,7 @@ impl SingleBits for u16 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1530,7 +1542,7 @@ impl SingleBits for i16 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1578,7 +1590,7 @@ impl SingleBits for u32 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1626,7 +1638,7 @@ impl SingleBits for i32 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1674,7 +1686,7 @@ impl SingleBits for u64 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1722,7 +1734,7 @@ impl SingleBits for i64 {
 		if copy > 0 {
 			Ok(true)
 		} else {
-		  Ok(false)
+			Ok(false)
 		}
 	}
 
@@ -1931,6 +1943,40 @@ impl InsertBitsIntoIntegralTypes for u64 {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn test_number_of_bits_required_for_an_unsinged_integer() {
+		assert_eq!(n_required_bits_for_an_unsigned_int(0), 1);
+		assert_eq!(n_required_bits_for_an_unsigned_int(1), 1);
+		assert_eq!(n_required_bits_for_an_unsigned_int(2), 2);
+		assert_eq!(n_required_bits_for_an_unsigned_int(3), 2);
+		assert_eq!(n_required_bits_for_an_unsigned_int(4), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(5), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(6), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(7), 3);
+		assert_eq!(n_required_bits_for_an_unsigned_int(8), 4);
+		assert_eq!(n_required_bits_for_an_unsigned_int(255), 8);
+		assert_eq!(n_required_bits_for_an_unsigned_int(256), 9);
+	}
+
+	#[test]
+	fn test_number_of_bits_required_for_a_singed_integer() {
+		assert_eq!(n_required_bits_for_a_signed_int(0), 1);
+		assert_eq!(n_required_bits_for_a_signed_int(-1), 1);
+		assert_eq!(n_required_bits_for_a_signed_int(-2), 2);
+		assert_eq!(n_required_bits_for_a_signed_int(-3), 3);
+		assert_eq!(n_required_bits_for_a_signed_int(-4), 3);
+		assert_eq!(n_required_bits_for_a_signed_int(-5), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-6), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-7), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-8), 4);
+		assert_eq!(n_required_bits_for_a_signed_int(-63), 7);
+		assert_eq!(n_required_bits_for_a_signed_int(-64), 7);
+		assert_eq!(n_required_bits_for_a_signed_int(-65), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-127), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-128), 8);
+		assert_eq!(n_required_bits_for_a_signed_int(-129), 9);
+	}
 
 	#[test]
 	fn range_checks_for_integrals() {
@@ -3730,39 +3776,5 @@ mod tests {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
-	}
-
-	#[test]
-	fn test_number_of_bits_required_for_an_unsinged_integer() {
-		assert_eq!(n_required_bits_for_an_unsigned_int(0), 1);
-		assert_eq!(n_required_bits_for_an_unsigned_int(1), 1);
-		assert_eq!(n_required_bits_for_an_unsigned_int(2), 2);
-		assert_eq!(n_required_bits_for_an_unsigned_int(3), 2);
-		assert_eq!(n_required_bits_for_an_unsigned_int(4), 3);
-		assert_eq!(n_required_bits_for_an_unsigned_int(5), 3);
-		assert_eq!(n_required_bits_for_an_unsigned_int(6), 3);
-		assert_eq!(n_required_bits_for_an_unsigned_int(7), 3);
-		assert_eq!(n_required_bits_for_an_unsigned_int(8), 4);
-		assert_eq!(n_required_bits_for_an_unsigned_int(255), 8);
-		assert_eq!(n_required_bits_for_an_unsigned_int(256), 9);
-	}
-
-	#[test]
-	fn test_number_of_bits_required_for_a_singed_integer() {
-		assert_eq!(n_required_bits_for_a_signed_int(0), 1);
-		assert_eq!(n_required_bits_for_a_signed_int(-1), 1);
-		assert_eq!(n_required_bits_for_a_signed_int(-2), 2);
-		assert_eq!(n_required_bits_for_a_signed_int(-3), 3);
-		assert_eq!(n_required_bits_for_a_signed_int(-4), 3);
-		assert_eq!(n_required_bits_for_a_signed_int(-5), 4);
-		assert_eq!(n_required_bits_for_a_signed_int(-6), 4);
-		assert_eq!(n_required_bits_for_a_signed_int(-7), 4);
-		assert_eq!(n_required_bits_for_a_signed_int(-8), 4);
-		assert_eq!(n_required_bits_for_a_signed_int(-63), 7);
-		assert_eq!(n_required_bits_for_a_signed_int(-64), 7);
-		assert_eq!(n_required_bits_for_a_signed_int(-65), 8);
-		assert_eq!(n_required_bits_for_a_signed_int(-127), 8);
-		assert_eq!(n_required_bits_for_a_signed_int(-128), 8);
-		assert_eq!(n_required_bits_for_a_signed_int(-129), 9);
 	}
 }
