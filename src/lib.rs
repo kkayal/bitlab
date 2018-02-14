@@ -16,7 +16,7 @@
 //! 
 //! # Version
 //! 
-//! 0.6.1
+//! 0.6.2
 //! 
 //! # Usage
 //! 
@@ -119,7 +119,6 @@ static LEN_TOO_BIG_MSG: &str = "The length parameter is too big for a ";
 // Source https://doc.rust-lang.org/book/first-edition/error-handling.html#the-result-type-alias-idiom
 // Shortens the return type in function signatures
 type Result<T> = std::result::Result<T, String>;
-
 
 /// A trait to get the data type as a string for a integer and floating point types.
 pub trait TypeInfo {
@@ -450,7 +449,6 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 }
 
-
 impl ExtractBitsFromIntegralTypes for i16 {
 	#[inline]
 	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
@@ -749,7 +747,6 @@ impl ExtractBitsFromIntegralTypes for i64 {
 		(self as u64).get_i64(start, length)
 	}
 }
-
 
 /// Defines a number of functions, which extract a range of bits from a Vec<u8>
 /// There is one function for each variable type to be returned
@@ -1849,9 +1846,6 @@ pub trait InsertBitsIntoIntegralTypes {
 macro_rules! def_set_fn {
 	($n:tt, $t:ty) => (
 		fn $n(self, start: usize, length: usize, value: $t) -> Result<(Self)> {
-			let mut value_copy = value;
-			let mut result = self;
-
 			// Range checks
 			if length > std::mem::size_of::<Self>() * 8 {
 				return Err(s!(LEN_TOO_BIG_MSG) + TypeInfo::type_of(&self));
@@ -1873,7 +1867,10 @@ macro_rules! def_set_fn {
 				}
 			}
 
-			value_copy <<= std::mem::size_of_val(&value) as u8 * 8 - (start + length) as u8;
+			let mut result = self;
+			let mut value_copy = value as Self; // as Self makes sure that value_copy has the same size
+			let shift = std::mem::size_of_val(&value_copy) as u8 * 8 - (start + length) as u8;
+			value_copy <<= shift;
 			for i in start .. start + length {
 				if value_copy.get_bit(i as u32)? {
 					result = result.set_bit(i as u32)?;
@@ -2751,7 +2748,6 @@ mod tests {
 		// TODO: Add the 64 bit tests when they are implemented
 	}
 
-
 	#[test]
 	#[should_panic]
 	fn panics_as_expected() {
@@ -2997,8 +2993,11 @@ mod tests {
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
-		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
@@ -3030,9 +3029,12 @@ mod tests {
 		let b : u8  = 3;
 		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
 
-		let a : u16 = 0b0110_0011_0000_0000;
+		let a : u16 = 0b0110_0011_0000_0110;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000);
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_u8(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
 		match a.set_u8(5, 18, b) {
@@ -3055,16 +3057,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u16 = 0b0110_0011_0000_0110;
 		let b : i8 =  0b0000_0010;
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
 
 		// b as negative signed integer
-		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i8(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
 		match a.set_i8(5, 18, b) {
@@ -3094,9 +3101,12 @@ mod tests {
 		let b : u8  = 3;
 		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
 
-		let a : u32 = 0b0110_0011_0000_0000_0000_0000_0000_0000;
+		let a : u32 = 0b0110_0011_0000_0110_0110_0011_0000_0110;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_u8(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
 
 		// You cannot insert 40 bits into an u32
 		match a.set_u8(5, 40, b) {
@@ -3119,16 +3129,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u32 = 0b0110_0011_0000_0110_0110_0011_0000_0110;
 		let b : i8 =  0b0000_0010;
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
 
 		// b as negative signed integer
-		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i8(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
 
 		// You cannot insert 40 bits into an u32
 		match a.set_i8(5, 40, b) {
@@ -3157,9 +3172,12 @@ mod tests {
 		let b : u8  = 3;
 		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
-		let a : u64 = 0b0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let a : u64 = 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_u8(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_u8(5, 80, b) {
@@ -3182,16 +3200,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u64 = 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : i8 =  0b0000_0010;
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u8 as i8' below is a (strange) workaround to prevent the warning we get with 'as i8'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
 		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i8(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_i8(5, 80, b) {
@@ -3242,8 +3265,11 @@ mod tests {
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
-		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i16'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
@@ -3271,6 +3297,9 @@ mod tests {
 		let b : u16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u16(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
+
 		// You cannot insert 18 bits into an u16
 		match a.set_u16(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3284,16 +3313,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u16 = 0b0110_0011_0000_1110;
 		let b : i16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
 
 		// b as negative signed integer
-		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i16(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
 		match a.set_i16(5, 18, b) {
@@ -3318,6 +3352,9 @@ mod tests {
 		let b : u16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u16(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
+
 		// You cannot insert 40 bits into an u32
 		match a.set_u16(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3331,16 +3368,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u32 = 0b0110_0011_0000_1110_0000_0000_0000_0000;
 		let b : i16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i16(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
 		match a.set_i16(5, 40, b) {
@@ -3365,6 +3407,9 @@ mod tests {
 		let b : u16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u16(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+
 		// You cannot insert 80 bits into an u64
 		match a.set_u16(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3378,16 +3423,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u64 = 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : i16 = 0b0000_0000_0000_0010;
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u16 as i16' below is a (strange) workaround to prevent the warning we get with 'as i6'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
 		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i16(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_i16(5, 80, b) {
@@ -3430,8 +3480,11 @@ mod tests {
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
-		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
@@ -3459,6 +3512,9 @@ mod tests {
 		let b : u32 = 2;
 		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u32(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+
 		// You cannot insert 18 bits into an u16
 		match a.set_u32(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3472,16 +3528,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u16 = 0b0000_0000_0110_0011;
 		let b : i32 = 2;
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// b as negative signed integer
-		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i32(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
 		match a.set_i32(5, 18, b) {
@@ -3506,6 +3567,9 @@ mod tests {
 		let b : u32 = 2;
 		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u32(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+
 		// You cannot insert 40 bits into an u32
 		match a.set_u32(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3519,16 +3583,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
 		let b : i32 = 2;
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i32(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
 		match a.set_i32(5, 40, b) {
@@ -3553,6 +3622,9 @@ mod tests {
 		let b : u32 = 2;
 		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u32(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+
 		// You cannot insert 80 bits into an u64
 		match a.set_u32(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3566,16 +3638,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : i32 = 2;
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u32 as i32' below is a (strange) workaround to prevent the warning we get with 'as i32'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
 		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i32(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_i32(5, 80, b) {
@@ -3613,13 +3690,15 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u8 = 0b0110_0011;
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
-		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
@@ -3647,6 +3726,9 @@ mod tests {
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
 		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u64(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+
 		// You cannot insert 18 bits into an u16
 		match a.set_u64(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3660,16 +3742,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u16 = 0b0000_0000_0110_0011;
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// b as negative signed integer
-		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i64(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
 		match a.set_i64(5, 18, b) {
@@ -3694,6 +3781,9 @@ mod tests {
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
 		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
+		// Use a big bit_offset
+		assert_eq!(a.set_u64(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+
 		// You cannot insert 40 bits into an u32
 		match a.set_u64(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
@@ -3707,16 +3797,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a comiler warning claiming out of range for an i8.
+		// IMHO, the warning is wrong, since that bit pattern is a valid i8 and the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
 		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i64(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
 		match a.set_i64(5, 40, b) {
@@ -3737,9 +3832,12 @@ mod tests {
 		let b : u64 = 3;
 		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
-		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
+		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000;
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_u64(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_u64(5, 80, b) {
@@ -3754,16 +3852,21 @@ mod tests {
 		}
 
 		// b as positive signed integer
-		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
 
 		// b as negative signed integer
-		// Using 'as u64 as i64' below is a (strange) workaround to prevent the warning we get with 'as i64'.
-		// See the discussion at https://github.com/rust-lang/rust/issues/48073
+		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
+		// IMHO, the warning is wrong, since the actual result is what I expect.
+		// Using 'as u64 as i64' below is a workaround to prevent that warning.
+		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
+
+		// Use a big bit_offset
+		assert_eq!(a.set_i64(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
 
 		// You cannot insert 80 bits into an u64
 		match a.set_i64(5, 80, b) {
