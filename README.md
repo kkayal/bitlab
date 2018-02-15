@@ -15,7 +15,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.7.0
+0.7.1
 
 # Usage
 
@@ -71,7 +71,7 @@ Insert a 2 bit unsigned integer value (b = 3) into a variable starting at the bi
 use bitlab::*;
 let a : u8 = 0;
 let b : u8 = 3;
-assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 ```
 
 ## Example 5:
