@@ -2922,7 +2922,6 @@ mod tests {
 
 	#[test]
 	fn inserting_8_bit_vars_into_u16() {
-
 		let a : u16 = 0;
 		let b : u8  = 3;
 		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
@@ -2994,7 +2993,6 @@ mod tests {
 
 	#[test]
 	fn inserting_8_bit_vars_into_u32() {
-
 		let a : u32 = 0;
 		let b : u8  = 3;
 		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
@@ -3777,5 +3775,95 @@ mod tests {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
+	}
+
+	#[test]
+	fn inserting_into_a_vector() {
+		// Simple 1: Insert 2 bits of the variable a into the vector v at
+		// byte offset 0 and bit offset 0.
+		let mut v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
+		let a : u8 = 3; // = 0b0000_0011
+		let bar = v.set(0, 0, 2, a);	// relevant bytes = 0x48 = 0b --> 01 <-- 00_1000
+		assert_eq!(bar.unwrap(), ());	// There were no errors
+		assert_eq!(v[0], 0b1100_1000);
+
+		// Simple 2: Insert 2 bits of the variable a into the vector v at
+		// byte offset 1 and bit offset 0.
+		let mut v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
+		let a : u8 = 3; // = 0b0000_0011
+		let bar = v.set(1, 0, 2, a);	// relevant bytes = 0x61 = 0b --> 01 <-- 10_0001
+		assert_eq!(bar.unwrap(), ());	// There were no errors
+		assert_eq!(v[1], 0b1110_0001);
+
+		// Complex 1: Insert 2 bits of the variable a into the vector v at
+		// byte offset 1 and bit offset 15.
+		let mut v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
+		let a : u8 = 3; // = 0b0000_0011
+		let bar = v.set(1, 15, 2, a); // relevant bytes = 0x6C_6C = 0b0110_110 --> 0_0 <-- 110_1100
+		assert_eq!(bar.unwrap(), ());	// There were no errors
+		assert_eq!(v[2], 0b0110_1101);
+		assert_eq!(v[3], 0b1110_1100);
+
+		// Complex 2: Insert 20 bits of the variable a into the vector v at
+		// byte offset 2 and bit offset 15.
+		let mut v: Vec<u8> = vec!{ 0x48, 0x61, 0x00, 0x6C, 0x6F, 0x00, 0xFF, 0x0F };
+		let a : i32 = 0b0000_0000_0000_0101_0101_0101_0101_0101;
+		// relevant bytes = 0x6C_6F_00_FF = 0b0110_110 --> 0_0110_1111_0000_0000_111 <-- 1_1111
+		// insert the last 20 bits of a          -->       0 1010 1010 1010 1010 101
+		let bar = v.set(2, 15, 20, a);
+		assert_eq!(bar.unwrap(), ());	// There were no errors
+		assert_eq!(v[2], 0);
+		assert_eq!(v[3], 0b0110_1100);
+		assert_eq!(v[4], 0b1010_1010);
+		assert_eq!(v[5], 0b1010_1010);
+		assert_eq!(v[6], 0b1011_1111);
+	}
+}
+
+/// TODO: Add the description
+pub trait InsertBitsIntoVecU8 {
+	/// TODO: Add the description
+	fn set<T: SingleBits + Copy>(&mut self, byte_offset: u32, bit_offset: u32, length: u32, value: T) -> Result<()>;
+}
+
+impl InsertBitsIntoVecU8 for Vec<u8> {
+	fn set<T: SingleBits + Copy>(&mut self, byte_offset: u32, bit_offset: u32, length: u32, value: T) -> Result<()> {
+
+		// TODO: Add range checks
+
+		let first_relevant_byte_index = byte_offset + bit_offset / 8;
+		let last_relevant_byte_index  = byte_offset + (bit_offset + length) / 8;
+
+		// For each relevant byte in the vector
+		// 1. Make a copy of a byte
+		// 2. For each relevant bit in the copy, set or clear the relevant bits (bit by bit)
+		// 3. Replace the oríginal byte in the vector with the modified copy
+		let mut bit_counter = length;
+		let mut read_bit_index = std::mem::size_of::<T>() as u32 * 8 - length;
+		let mut write_bit_index = bit_offset % 8;
+
+		for byte_index in first_relevant_byte_index .. last_relevant_byte_index + 1 {
+			let mut copy = self[byte_index as usize];	// Step 1
+
+			// Step 2
+			while bit_counter > 0 {
+				if value.get_bit(read_bit_index)? {
+					copy = copy.set_bit(write_bit_index)?;
+				} else {
+					copy = copy.clear_bit(write_bit_index)?;
+				}
+				read_bit_index += 1;
+				write_bit_index += 1;
+				bit_counter -= 1;
+				if write_bit_index % 8 == 0 {
+					write_bit_index = 0;
+					break;
+				}
+			}
+
+			self[byte_index as usize] = copy;	// Step 3
+		}
+
+		Ok(())
 	}
 }
