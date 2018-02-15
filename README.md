@@ -15,11 +15,11 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.6.2
+0.7.0
 
 # Usage
 
-1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
+1. In your Cargo.toml file, add `bitlab = "0.7"` under `[dependencies]`
 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 
 ## Example 1: 

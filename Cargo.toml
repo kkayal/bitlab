@@ -1,6 +1,6 @@
 [package]
 name = "bitlab"
-version = "0.6.2"
+version = "0.7.0"
 authors = ["Kağan Kayal"]
 description = "Extracting a range of bits from a binary data source"
 documentation = "https://docs.rs/bitlab/"
@@ -16,3 +16,4 @@ travis-ci = { repository = "kkayal/bitlab", branch = "master" }
 maintenance = { status = "experimental" }
 
 [dependencies]
+num = "0.1"

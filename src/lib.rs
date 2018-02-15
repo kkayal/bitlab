@@ -16,11 +16,11 @@
 //! 
 //! # Version
 //! 
-//! 0.6.2
+//! 0.7.0
 //! 
 //! # Usage
 //! 
-//! 1. In your Cargo.toml file, add `bitlab = "0.6"` under `[dependencies]`
+//! 1. In your Cargo.toml file, add `bitlab = "0.7"` under `[dependencies]`
 //! 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 //! 
 //! ## Example 1: 
@@ -73,7 +73,8 @@
 //! use bitlab::*;
 //! let a : u8 = 0;
 //! let b : u8 = 3;
-//! assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+//! let c = a.set(1, 2, b).unwrap();
+//! assert_eq!(c, 0b0110_0000);
 //! ```
 //! ## Example 5:
 //! 
@@ -111,6 +112,8 @@
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
 	html_favicon_url = "https://www.rust-lang.org/favicon.ico",
 	html_root_url = "https://doc.rust-lang.org/")]
+
+extern crate num;
 
 static OUT_OF_RANGE_MSG: &str = "Out of range";
 static LEN_TOO_BIG_MSG: &str = "The length parameter is too big for a ";
@@ -160,7 +163,7 @@ macro_rules! s {
 
 macro_rules! check_max_bit_offset {
 	( $x:expr ) => {
-		if $x > ( std::mem::size_of::<Self>() * 8 - 1 ) as u32 {
+		if $x > ( std::mem::size_of::<Self>() as u32 * 8 - 1 ) as u32 {
 			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 	}
@@ -168,30 +171,30 @@ macro_rules! check_max_bit_offset {
 
 macro_rules! check_range {
 	( $x:expr ) => {
-		if $x > std::mem::size_of::<Self>() * 8 {
+		if $x > std::mem::size_of::<Self>() as u32 * 8 {
 			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 	}
 }
 
 /// How many bits does it take to write an unsigned integer?
-pub fn n_required_bits_for_an_unsigned_int(num: u64) -> usize {
+pub fn n_required_bits_for_an_unsigned_int(num: u64) -> u32 {
 	// TODO: The performance can be probaly improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.log2();
 	if j > 0_f64 {
-		j.floor() as usize + 1
+		j.floor() as u32 + 1
 	}
 	else { 1 }
 }
 
 /// How many bits does it take to write a signed integer?
-pub fn n_required_bits_for_a_signed_int(num: i64) -> usize {
+pub fn n_required_bits_for_a_signed_int(num: i64) -> u32 {
 	// TODO: The performance can be probaly improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.abs().log2();
 	if j > 0_f64 {
-		j.ceil() as usize + 1
+		j.ceil() as u32 + 1
 	}
 	else { 1 }
 }
@@ -206,69 +209,69 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be extracted. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)>;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)>;
 }
 
 impl ExtractBitsFromIntegralTypes for u8 {
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -285,7 +288,7 @@ impl ExtractBitsFromIntegralTypes for u8 {
 		Ok(copy)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -303,80 +306,80 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		Ok(self.get_u8(start, length)? as u16)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		Ok(self.get_i8(start, length)? as i16)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		Ok(self.get_u8(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		Ok(self.get_i8(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		Ok(self.get_u8(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		Ok(self.get_i8(start, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i8 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		(self as u8).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		(self as u8).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		(self as u8).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		(self as u8).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		(self as u8).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		(self as u8).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		(self as u8).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		(self as u8).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u16 {
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -385,7 +388,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_u16(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -394,7 +397,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_i16(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -411,7 +414,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(copy)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -429,70 +432,70 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		Ok(self.get_u16(start, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		Ok(self.get_i16(start, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		Ok(self.get_u16(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		Ok(self.get_i16(start, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i16 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		(self as u16).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		(self as u16).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		(self as u16).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		(self as u16).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		(self as u16).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		(self as u16).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		(self as u16).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		(self as u16).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u32 {
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -501,7 +504,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -510,7 +513,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_i32(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
@@ -519,7 +522,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
@@ -528,7 +531,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_i32(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -545,7 +548,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(copy)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -563,60 +566,60 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		Ok(self.get_u32(start, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		Ok(self.get_i32(start, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i32 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		(self as u32).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		(self as u32).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		(self as u32).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		(self as u32).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		(self as u32).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		(self as u32).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		(self as u32).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		(self as u32).get_i64(start, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u64 {
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -625,7 +628,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u8)
 	}
 
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -634,7 +637,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i8)
 	}
 
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
@@ -643,7 +646,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u16)
 	}
 
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
@@ -652,7 +655,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i16)
 	}
 
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		if length > 32 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u32");
 		}
@@ -661,7 +664,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64(start, length)? as u32)
 	}
 
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		if length > 32 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i32");
 		}
@@ -670,7 +673,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64(start, length)? as i32)
 	}
 
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		check_range!(start + length);
 
 		// Don't touch the original
@@ -687,7 +690,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(copy)
 	}
 
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		// Check if the desired range is valid
 		check_range!(start + length);
 
@@ -708,42 +711,42 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 impl ExtractBitsFromIntegralTypes for i64 {
 	#[inline]
-	fn get_u8(self, start: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(self, start: u32, length: u32) -> Result<(u8)> {
 		(self as u64).get_u8(start, length)
 	}
 
 	#[inline]
-	fn get_i8(self, start: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(self, start: u32, length: u32) -> Result<(i8)> {
 		(self as u64).get_i8(start, length)
 	}
 
 	#[inline]
-	fn get_u16(self, start: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(self, start: u32, length: u32) -> Result<(u16)> {
 		(self as u64).get_u16(start, length)
 	}
 
 	#[inline]
-	fn get_i16(self, start: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(self, start: u32, length: u32) -> Result<(i16)> {
 		(self as u64).get_i16(start, length)
 	}
 
 	#[inline]
-	fn get_u32(self, start: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(self, start: u32, length: u32) -> Result<(u32)> {
 		(self as u64).get_u32(start, length)
 	}
 
 	#[inline]
-	fn get_i32(self, start: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(self, start: u32, length: u32) -> Result<(i32)> {
 		(self as u64).get_i32(start, length)
 	}
 
 	#[inline]
-	fn get_u64(self, start: usize, length: usize) -> Result<(u64)> {
+	fn get_u64(self, start: u32, length: u32) -> Result<(u64)> {
 		(self as u64).get_u64(start, length)
 	}
 
 	#[inline]
-	fn get_i64(self, start: usize, length: usize) -> Result<(i64)> {
+	fn get_i64(self, start: u32, length: u32) -> Result<(i64)> {
 		(self as u64).get_i64(start, length)
 	}
 }
@@ -756,63 +759,63 @@ pub trait ExtractBitsFromVecU8 {
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u8(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u8)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u8(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u8)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 8 bit integer or an error message.
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i8(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i8)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i8(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i8)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer or an error message.
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u16(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u16)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u16(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u16)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 16 bit integer or an error message.
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i16(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i16)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i16(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i16)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer or an error message.
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_u32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(u32)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u32(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u32)>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 32 bit integer or an error message.
 	///
 	/// Parameters:
 	///
-	/// - **byte_offset** (usize) the number of bytes to skip in source
-	/// - **bit_offset** (usize) the start position of the bits to be extracted. Zero is the most significant bit
-	/// - **length** (usize) the number of bits to be extracted.
-	fn get_i32(&self, byte_offset: usize, start: usize, length: usize) -> Result<(i32)>;
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i32(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i32)>;
 
 	// TODO: Add get_u64 and get_i64
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
-	fn get_u8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u8)> {
+	fn get_u8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u8)> {
 		if length <= 8 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -821,7 +824,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				bit_offset_copy -= (bit_offset_copy / 8) * 8;
 
 				if bit_offset_copy + length <= 8 {
-					let mut copy: u8 = self[byte_offset_copy];
+					let mut copy: u8 = self[byte_offset_copy as usize];
 					// Assume that the data is given in big endian and
 					// convert it to whatever endiannes we have on the users machine
 					copy = u8::from_be(copy);
@@ -833,7 +836,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy);
 				} else { // The range of bits spans over 2 bytes (not more)
 					// Copy the first byte
-					let copy1: u8 = self[byte_offset_copy];
+					let copy1: u8 = self[byte_offset_copy as usize];
 
 					// Copy that into a bigger variable type
 					let mut copy1_as_u16: u16 = copy1 as u16;
@@ -842,7 +845,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					copy1_as_u16 <<= 8;
 
 					// Now copy the second bytes
-					let copy2: u8 = self[byte_offset_copy + 1];
+					let copy2: u8 = self[byte_offset_copy  as usize + 1];
 
 					// Logical OR these two to get the original 2 bytes
 					let mut result = copy1_as_u16 | (copy2 as u16);
@@ -860,9 +863,9 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i8(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i8)> {
+	fn get_i8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i8)> {
 		if length <= 8 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -871,7 +874,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				bit_offset_copy -= (bit_offset_copy / 8) * 8;
 
 				if bit_offset_copy + length <= 8 {
-					let mut copy: i8 = self[byte_offset_copy] as i8;
+					let mut copy: i8 = self[byte_offset_copy as usize] as i8;
 					// Assume that the data is given in big endian and
 					// convert it to whatever endiannes we have on the users machine
 					copy = i8::from_be(copy);
@@ -883,7 +886,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					return Ok(copy);
 				} else { // The range of bits spans over 2 bytes (not more)
 					// Copy the first byte
-					let copy1: i8 = self[byte_offset_copy] as i8;
+					let copy1: i8 = self[byte_offset_copy as usize] as i8;
 
 					// Copy that into a bigger variable type
 					let mut copy1_as_i16: i16 = copy1 as i16;
@@ -892,7 +895,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					copy1_as_i16 <<= 8;
 
 					// Now copy the second bytes
-					let copy2: i8 = self[byte_offset_copy + 1] as i8;
+					let copy2: i8 = self[byte_offset_copy as usize + 1] as i8;
 
 					// Logical OR these two to get the original 2 bytes
 					let mut result = copy1_as_i16 | (copy2 as i16);
@@ -910,9 +913,9 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u16)> {
+	fn get_u16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u16)> {
 		if length <= 16 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -922,7 +925,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 				if bit_offset_copy + length <= 8 {
 					// Don't touch the original
-					let copy1 = self[byte_offset_copy] as i8;
+					let copy1 = self[byte_offset_copy as usize] as i8;
 
 					// Expand to u16
 					let mut copy2 = copy1 as u16;
@@ -936,13 +939,13 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy2);
 				} else if bit_offset_copy + length <= 16 {
-					let mut copy1 = self[byte_offset_copy] as u16;
+					let mut copy1 = self[byte_offset_copy as usize] as u16;
 
 					// This is the most significant byte. SO move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 8;
 
-					let copy2 = self[byte_offset_copy + 1] as u16;
+					let copy2 = self[byte_offset_copy as usize + 1] as u16;
 
 					// Logical OR these two to get the original 2 bytes
 					let mut copy3 = copy1 | copy2;
@@ -956,16 +959,16 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy3);
 				} else { // The range of bits spans over 3 bytes (not more)
-					let mut copy1 = self[byte_offset_copy] as u32;
+					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 16;
 
-					let mut copy2 = self[byte_offset_copy + 1] as u32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
 					copy2 <<= 8;
 
-					let copy3 = self[byte_offset_copy + 2] as u32;
+					let copy3 = self[byte_offset_copy as usize + 2] as u32;
 					// copy3 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -988,9 +991,9 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i16(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i16)> {
+	fn get_i16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i16)> {
 		if length <= 16 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -1000,7 +1003,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 				if bit_offset_copy + length <= 8 {
 					// Don't touch the original
-					let copy1 = self[byte_offset_copy] as i8;
+					let copy1 = self[byte_offset_copy as usize] as i8;
 
 					// Expand to i16
 					let mut copy2 = copy1 as i16;
@@ -1014,13 +1017,13 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy2);
 				} else if bit_offset_copy + length <= 16 {
-					let mut copy1 = self[byte_offset_copy] as i16;
+					let mut copy1 = self[byte_offset_copy as usize] as i16;
 
 					// This is the most significant byte. SO move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 8;
 
-					let copy2 = self[byte_offset_copy + 1] as i16;
+					let copy2 = self[byte_offset_copy as usize + 1] as i16;
 
 					// Logical OR these two to get the original 2 bytes
 					let mut copy3 = copy1 | copy2;
@@ -1034,16 +1037,16 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy3);
 				} else { // The range of bits spans over 3 bytes (not more)
-					let mut copy1 = self[byte_offset_copy] as i32;
+					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 16;
 
-					let mut copy2 = self[byte_offset_copy + 1] as i32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
 					copy2 <<= 8;
 
-					let copy3 = self[byte_offset_copy + 2] as i32;
+					let copy3 = self[byte_offset_copy as usize + 2] as i32;
 					// copy3 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1066,9 +1069,9 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(u32)> {
+	fn get_u32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u32)> {
 		if length <= 32 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -1078,7 +1081,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 				if bit_offset_copy + length <= 8 {
 					// Don't touch the original
-					let copy1 = self[byte_offset_copy] as u8;
+					let copy1 = self[byte_offset_copy as usize] as u8;
 
 					// Expand to u32
 					let mut copy2 = copy1 as u32;
@@ -1092,13 +1095,13 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy2);
 				} else if bit_offset_copy + length <= 16 {
-					let mut copy1 = self[byte_offset_copy] as u32;
+					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. SO move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 8;
 
-					let copy2 = self[byte_offset_copy + 1] as u32;
+					let copy2 = self[byte_offset_copy as usize + 1] as u32;
 					// copy2 <<= 0;
 
 					// Logical OR these two to get the original 2 bytes
@@ -1113,16 +1116,16 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy3);
 				} else if bit_offset_copy + length <= 24 {
-					let mut copy1 = self[byte_offset_copy] as u32;
+					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 16;
 
-					let mut copy2 = self[byte_offset_copy + 1] as u32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
 					copy2 <<= 8;
 
-					let copy3 = self[byte_offset_copy + 2] as u32;
+					let copy3 = self[byte_offset_copy as usize + 2] as u32;
 					// copy3 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1137,19 +1140,19 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy4 as u32);
 				} else if bit_offset_copy + length <= 32 {
-					let mut copy1 = self[byte_offset_copy] as u32;
+					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 24;
 
-					let mut copy2 = self[byte_offset_copy + 1] as u32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
 					copy2 <<= 16;
 
-					let mut copy3 = self[byte_offset_copy + 2] as u32;
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u32;
 					copy3 <<= 8;
 
-					let copy4 = self[byte_offset_copy + 3] as u32;
+					let copy4 = self[byte_offset_copy as usize + 3] as u32;
 					// copy4 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1164,22 +1167,22 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy5 as u32);
 				} else {
-					let mut copy1 = self[byte_offset_copy] as u64;
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 32;
 
-					let mut copy2 = self[byte_offset_copy + 1] as u64;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
 					copy2 <<= 24;
 
-					let mut copy3 = self[byte_offset_copy + 2] as u64;
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
 					copy3 <<= 16;
 
-					let mut copy4 = self[byte_offset_copy + 3] as u64;
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u64;
 					copy4 <<= 8;
 
-					let copy5 = self[byte_offset_copy + 4] as u64;
+					let copy5 = self[byte_offset_copy as usize + 4] as u64;
 					// copy5 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1202,9 +1205,9 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i32(&self, byte_offset: usize, bit_offset: usize, length: usize) -> Result<(i32)> {
+	fn get_i32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i32)> {
 		if length <= 32 {
-			if self.len() * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
 				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
 				let mut byte_offset_copy = byte_offset;
 				let mut bit_offset_copy = bit_offset;
@@ -1214,7 +1217,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 				if bit_offset_copy + length <= 8 {
 					// Don't touch the original
-					let copy1 = self[byte_offset_copy] as i8;
+					let copy1 = self[byte_offset_copy as usize] as i8;
 
 					// Expand to i32
 					let mut copy2 = copy1 as i32;
@@ -1228,13 +1231,13 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy2);
 				} else if bit_offset_copy + length <= 16 {
-					let mut copy1 = self[byte_offset_copy] as i32;
+					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. SO move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 8;
 
-					let copy2 = self[byte_offset_copy + 1] as i32;
+					let copy2 = self[byte_offset_copy as usize + 1] as i32;
 					// copy2 <<= 0;
 
 					// Logical OR these two to get the original 2 bytes
@@ -1249,16 +1252,16 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy3);
 				} else if bit_offset_copy + length <= 24 {
-					let mut copy1 = self[byte_offset_copy] as i32;
+					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 16;
 
-					let mut copy2 = self[byte_offset_copy + 1] as i32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
 					copy2 <<= 8;
 
-					let copy3 = self[byte_offset_copy + 2] as i32;
+					let copy3 = self[byte_offset_copy as usize + 2] as i32;
 					// copy3 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1273,19 +1276,19 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy4 as i32);
 				} else if bit_offset_copy + length <= 32 {
-					let mut copy1 = self[byte_offset_copy] as i32;
+					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 24;
 
-					let mut copy2 = self[byte_offset_copy + 1] as i32;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
 					copy2 <<= 16;
 
-					let mut copy3 = self[byte_offset_copy + 2] as i32;
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i32;
 					copy3 <<= 8;
 
-					let copy4 = self[byte_offset_copy + 3] as i32;
+					let copy4 = self[byte_offset_copy as usize + 3] as i32;
 					// copy4 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1300,22 +1303,22 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 
 					return Ok(copy5 as i32);
 				} else {
-					let mut copy1 = self[byte_offset_copy] as i64;
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
 
 					// This is the most significant byte. So move it to the left
 					// NOTE: The byte order should be OK for both big and little endians
 					copy1 <<= 32;
 
-					let mut copy2 = self[byte_offset_copy + 1] as i64;
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
 					copy2 <<= 24;
 
-					let mut copy3 = self[byte_offset_copy + 2] as i64;
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
 					copy3 <<= 16;
 
-					let mut copy4 = self[byte_offset_copy + 3] as i64;
+					let mut copy4 = self[byte_offset_copy as usize + 3] as i64;
 					copy4 <<= 8;
 
-					let copy5 = self[byte_offset_copy + 4] as i64;
+					let copy5 = self[byte_offset_copy as usize + 4] as i64;
 					// copy5 <<= 0;
 
 					// Logical OR these two to get the original 3 bytes
@@ -1750,127 +1753,61 @@ impl SingleBits for i64 {
 	}
 }
 
-/// Defines a number of functions, which insert any integer value
-/// into any integer type (u8, u16, u32 and u64, i8, i16, i32 and i64) and return
-/// the result as the same type.
-///
-/// E.g. a.set_u8(1, 2, b) inserts the last two bits of b into a, starting at the
-/// bit offset 1, where the bit offset zero is defined as the **most** significant bit.
-/// All other bits of a, remain untouched.
-///
-/// Example1:
-/// let a : u8 = 0;
-/// let b : u16 = 3;
-/// assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
-///
-/// Example2:
-/// let a : u8 = 0b0110_0011;
-/// let b : u8 = 2;
-/// assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101);
-pub trait InsertBitsIntoIntegralTypes {
-	/// Inserts a range of bits and returns a Result object.
-	///
+/// Provides a single function to insert a sized integer into an other sized integer type
+pub trait InsertIntoSizedIntegerTypes {
+	/// Inserts a sized integer value into an other sized integer type
 	/// Parameters:
 	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (u8) the value to be inserted.
-	fn set_u8(self, start: usize, length: usize, value: u8) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (i8) the value to be inserted.
-	fn set_i8(self, start: usize, length: usize, value: i8) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (u16) the value to be inserted.
-	fn set_u16(self, start: usize, length: usize, value: u16) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (i16) the value to be inserted.
-	fn set_i16(self, start: usize, length: usize, value: i16) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (u32) the value to be inserted.
-	fn set_u32(self, start: usize, length: usize, value: u32) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (i32) the value to be inserted.
-	fn set_i32(self, start: usize, length: usize, value: i32) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (u64) the value to be inserted.
-	fn set_u64(self, start: usize, length: usize, value: u64) -> Result<(Self)> where Self: std::marker::Sized;
-
-	/// Inserts a range of bits and returns a Result object.
-	///
-	/// Parameters:
-	///
-	/// - **start** (usize) the start position of the bits to be overwritten. Zero is the most significant bit  
-	/// - **length** (usize) the number of bits to be overwritten.
-	/// - **value** (i64) the value to be inserted.
-	fn set_i64(self, start: usize, length: usize, value: i64) -> Result<(Self)> where Self: std::marker::Sized;
+	/// - **start** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
+	/// - **length** (u32) the number of bits to be extracted (at the least significant side).
+	/// - **value** (Any sized integer type) the value to be inserted.
+	fn set<T>(self, start: u32, length: u32, value: T) -> Result<(Self)>
+		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
+		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
+		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
+		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
+		T : std::string::ToString;
 }
 
-// The first parameter ($n) is the function name and
-// the second one is the variable type to be inserted ($t)
+// The first parameter ($t) is the variable type to be inserted ($t)
 macro_rules! def_set_fn {
-	($n:tt, $t:ty) => (
-		fn $n(self, start: usize, length: usize, value: $t) -> Result<(Self)> {
+	($t:ty) => (
+		fn set<T>(self, start: u32, length: u32, value: T) -> Result<(Self)>
+		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
+		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
+		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
+		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
+		T : std::string::ToString {
 			// Range checks
-			if length > std::mem::size_of::<Self>() * 8 {
+			if length > std::mem::size_of::<Self>() as u32 * 8 {
 				return Err(s!(LEN_TOO_BIG_MSG) + TypeInfo::type_of(&self));
 			}
 
 			check_range!(start + length);
 
 			if value.is_signed() {
-				let n = n_required_bits_for_a_signed_int(value as i64);
+				let n = n_required_bits_for_a_signed_int(value.as_()); // value.as_() is type casting to u32 in this case
 				if n > length {
-					return Err(format!("Cannot insert {} as a {} bit signed integer variable, since it requires at least {} bits.",
+					return Err(format!("Failed to insert {} as a {} bit signed integer variable, since it requires at least {} bits.",
 						&value.to_string(), &length.to_string(), &n.to_string()))
 				}
 			} else {
-				let n = n_required_bits_for_an_unsigned_int(value as u64);
+				let n = n_required_bits_for_an_unsigned_int(value.as_()); // value.as_() is type casting to u32 in this case
 				if n > length {
-					return Err(format!("Cannot insert {} as a {} bit unsigned integer variable, since it requires at least {} bits.",
+					return Err(format!("Failed to insert {} as a {} bit unsigned integer variable, since it requires at least {} bits.",
 						&value.to_string(), &length.to_string(), &n.to_string()))
 				}
 			}
 
 			let mut result = self;
-			let mut value_copy = value as Self; // as Self makes sure that value_copy has the same size
+
+			// makes sure that value_copy has the same size by type casting to Self
+			let mut value_copy : Self = value.as_();
 			let shift = std::mem::size_of_val(&value_copy) as u8 * 8 - (start + length) as u8;
 			value_copy <<= shift;
+
 			for i in start .. start + length {
 				if value_copy.get_bit(i as u32)? {
 					result = result.set_bit(i as u32)?;
@@ -1883,53 +1820,14 @@ macro_rules! def_set_fn {
 	)
 }
 
-impl InsertBitsIntoIntegralTypes for u8 {
-	def_set_fn!(set_u8,  u8);
-	def_set_fn!(set_u16, u16);
-	def_set_fn!(set_u32, u32);
-	def_set_fn!(set_u64, u64);
-
-	def_set_fn!(set_i8,  i8);
-	def_set_fn!(set_i16, i16);
-	def_set_fn!(set_i32, i32);
-	def_set_fn!(set_i64, i64);
-}
-
-impl InsertBitsIntoIntegralTypes for u16 {
-	def_set_fn!(set_u8,  u8);
-	def_set_fn!(set_u16, u16);
-	def_set_fn!(set_u32, u32);
-	def_set_fn!(set_u64, u64);
-
-	def_set_fn!(set_i8,  i8);
-	def_set_fn!(set_i16, i16);
-	def_set_fn!(set_i32, i32);
-	def_set_fn!(set_i64, i64);
-}
-
-impl InsertBitsIntoIntegralTypes for u32 {
-	def_set_fn!(set_u8,  u8);
-	def_set_fn!(set_u16, u16);
-	def_set_fn!(set_u32, u32);
-	def_set_fn!(set_u64, u64);
-
-	def_set_fn!(set_i8,  i8);
-	def_set_fn!(set_i16, i16);
-	def_set_fn!(set_i32, i32);
-	def_set_fn!(set_i64, i64);
-}
-
-impl InsertBitsIntoIntegralTypes for u64 {
-	def_set_fn!(set_u8,  u8);
-	def_set_fn!(set_u16, u16);
-	def_set_fn!(set_u32, u32);
-	def_set_fn!(set_u64, u64);
-
-	def_set_fn!(set_i8,  i8);
-	def_set_fn!(set_i16, i16);
-	def_set_fn!(set_i32, i32);
-	def_set_fn!(set_i64, i64);
-}
+impl InsertIntoSizedIntegerTypes for u8  { def_set_fn!(u8); }
+impl InsertIntoSizedIntegerTypes for i8  { def_set_fn!(i8); }
+impl InsertIntoSizedIntegerTypes for u16 { def_set_fn!(u8); }
+impl InsertIntoSizedIntegerTypes for i16 { def_set_fn!(i8); }
+impl InsertIntoSizedIntegerTypes for u32 { def_set_fn!(u8); }
+impl InsertIntoSizedIntegerTypes for i32 { def_set_fn!(i8); }
+impl InsertIntoSizedIntegerTypes for u64 { def_set_fn!(u8); }
+impl InsertIntoSizedIntegerTypes for i64 { def_set_fn!(i8); }
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
@@ -2961,36 +2859,36 @@ mod tests {
 	fn inserting_8_bit_vars_into_u8() {
 		let a : u8 = 0;
 		let b : u8 = 3;
-		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 
 		let a : u8 = 0b0110_0011;
 		let b : u8 = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_u8(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_u8(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
-		let b = 5;
-		match a.set_u8(5, 2, b) {
+		let b : u8 = 5;
+		match a.set(5, 2, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
 		}
 
 		// b as positive signed integer
 		let a : u8 = 0b0110_0011;
 		let b : i8 = 0b0000_0010;
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3000,15 +2898,15 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
-		match a.set_i8(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_i8(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3016,9 +2914,9 @@ mod tests {
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
 		let b = -5;
-		match a.set_i8(5, 2, b) {
+		match a.set(5, 2, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
 		}
 	}
 
@@ -3027,38 +2925,38 @@ mod tests {
 
 		let a : u16 = 0;
 		let b : u8  = 3;
-		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
 
 		let a : u16 = 0b0110_0011_0000_0110;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u8(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_u8(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_u8(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
-		let b = 5;
-		match a.set_u8(5, 2, b) {
+		let b : u8 = 5;
+		match a.set(5, 2, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
 		}
 
 		// b as positive signed integer
 		let b : i8 =  0b0000_0010;
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3068,19 +2966,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i8(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_i8(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_i8(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3088,9 +2986,9 @@ mod tests {
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
 		let b = -5;
-		match a.set_i8(5, 2, b) {
+		match a.set(5, 2, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
 		}
 	}
 
@@ -3099,38 +2997,38 @@ mod tests {
 
 		let a : u32 = 0;
 		let b : u8  = 3;
-		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u32 = 0b0110_0011_0000_0110_0110_0011_0000_0110;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u8(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_u8(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_u8(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
-		let b = 5;
-		match a.set_u8(5, 2, b) {
+		let b : u8 = 5;
+		match a.set(5, 2, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
 		}
 
 		// b as positive signed integer
 		let b : i8 =  0b0000_0010;
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3140,19 +3038,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i8(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_1010);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_i8(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_i8(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3160,9 +3058,9 @@ mod tests {
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
 		let b = -5;
-		match a.set_i8(5, 2, b) {
+		match a.set(5, 2, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
 		}
 	}
 
@@ -3170,38 +3068,38 @@ mod tests {
 	fn inserting_8_bit_vars_into_u64() {
 		let a : u64 = 0;
 		let b : u8  = 3;
-		assert_eq!(a.set_u8(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u64 = 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : u8  = 0b0000_0010;
-		assert_eq!(a.set_u8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u8(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_u8(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_u8(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
-		let b = 5;
-		match a.set_u8(5, 2, b) {
+		let b : u8 = 5;
+		match a.set(5, 2, b) {
 			Ok(_)  => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert 5 as a 2 bit unsigned integer variable, since it requires at least 3 bits.")),
 		}
 
 		// b as positive signed integer
 		let b : i8 =  0b0000_0010;
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3211,19 +3109,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
-		assert_eq!(a.set_i8(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i8(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0110_0011_0000_0110_0110_0011_0000_0110_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_i8(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_i8(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3231,9 +3129,9 @@ mod tests {
 		// The _length_ parameter must not be smaller than the number of bits,
 		// which is required to represent _value_
 		let b = -5;
-		match a.set_i8(5, 2, b) {
+		match a.set(5, 2, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
-			Err(e) => assert_eq!(e, s!("Cannot insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
+			Err(e) => assert_eq!(e, s!("Failed to insert -5 as a 2 bit signed integer variable, since it requires at least 4 bits.")),
 		}
 	}
 
@@ -3241,20 +3139,20 @@ mod tests {
 	fn inserting_16_bit_vars_into_u8() {
 		let a : u8 = 0;
 		let b : u16 = 3;
-		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 
 		let a : u8 = 0b0110_0011;
 		let b : u16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_u16(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_u16(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3262,7 +3160,7 @@ mod tests {
 		// b as positive signed integer
 		let a : u8 = 0b0110_0011;
 		let b : i16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3272,16 +3170,16 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_i16(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_i16(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3291,30 +3189,30 @@ mod tests {
 	fn inserting_16_bit_vars_into_u16() {
 		let a : u16 = 0;
 		let b : u16 = 3;
-		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
 
 		let a : u16 = 0b0110_0011_0000_1110;
 		let b : u16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u16(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_u16(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_u16(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3324,19 +3222,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i16(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0110_0011_0000_1010);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_i16(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_i16(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3346,30 +3244,30 @@ mod tests {
 	fn inserting_16_bit_vars_into_u32() {
 		let a : u32 = 0;
 		let b : u16 = 3;
-		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u32 = 0b0110_0011_0000_1110_0000_0000_0000_0000;
 		let b : u16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u16(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_u16(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_u16(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3379,19 +3277,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i16(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_i16(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_i16(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3401,30 +3299,30 @@ mod tests {
 	fn inserting_16_bit_vars_into_u64() {
 		let a : u64 = 0;
 		let b : u16 = 3;
-		assert_eq!(a.set_u16(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u64 = 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : u16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_u16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u16(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_u16(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_u16(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i16 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3434,19 +3332,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
-		assert_eq!(a.set_i16(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i16(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0110_0011_0000_1110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_i16(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_i16(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3456,20 +3354,20 @@ mod tests {
 	fn inserting_32_bit_vars_into_u8() {
 		let a : u8 = 0;
 		let b : u32 = 3;
-		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 
 		let a : u8 = 0b0110_0011;
 		let b : u32 = 0b0000_0000_0000_0010;
-		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_u32(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_u32(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3477,7 +3375,7 @@ mod tests {
 		// b as positive signed integer
 		let a : u8 = 0b0110_0011;
 		let b : i32 = 0b0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3487,16 +3385,16 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_i32(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_i32(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3506,30 +3404,30 @@ mod tests {
 	fn inserting_32_bit_vars_into_u16() {
 		let a : u16 = 0;
 		let b : u32 = 3;
-		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
 
 		let a : u16 = 0b0000_0000_0110_0011;
 		let b : u32 = 2;
-		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u32(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_u32(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_u32(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i32 = 2;
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3539,19 +3437,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i32(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_i32(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_i32(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3561,30 +3459,30 @@ mod tests {
 	fn inserting_32_bit_vars_into_u32() {
 		let a : u32 = 0;
 		let b : u32 = 3;
-		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
 		let b : u32 = 2;
-		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u32(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_u32(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_u32(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i32 = 2;
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3594,19 +3492,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i32(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_i32(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_i32(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3616,30 +3514,30 @@ mod tests {
 	fn inserting_32_bit_vars_into_u64() {
 		let a : u64 = 0;
 		let b : u32 = 3;
-		assert_eq!(a.set_u32(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 		let b : u32 = 2;
-		assert_eq!(a.set_u32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u32(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_u32(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_u32(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i32 = 2;
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3649,19 +3547,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
-		assert_eq!(a.set_i32(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i32(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
+		assert_eq!(a.set(60, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_i32(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_i32(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3671,27 +3569,27 @@ mod tests {
 	fn inserting_64_bit_vars_into_u8() {
 		let a : u8 = 0;
 		let b : u64 = 3;
-		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 
 		let a : u8 = 0b0110_0011;
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_u64(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_u64(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3701,16 +3599,16 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0110_0101);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0110_0101);
 
 		// You cannot insert 9 bits into an u8
-		match a.set_i64(5, 9, b) {
+		match a.set(5, 9, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u8")),
 		}
 
 		// start + length must not exceed 8 bit (size of u8)
-		match a.set_i64(5, 8, b) {
+		match a.set(5, 8, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3720,30 +3618,30 @@ mod tests {
 	fn inserting_64_bit_vars_into_u16() {
 		let a : u16 = 0;
 		let b : u64 = 3;
-		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000);
 
 		let a : u16 = 0b0000_0000_0110_0011;
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u64(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_u64(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_u64(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3753,19 +3651,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i64(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
+		assert_eq!(a.set(12, 2, b).unwrap(), 0b0000_0000_0110_1011);
 
 		// You cannot insert 18 bits into an u16
-		match a.set_i64(5, 18, b) {
+		match a.set(5, 18, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u16")),
 		}
 
 		// start + length must not exceed 16 bit (size of u16)
-		match a.set_i64(5, 15, b) {
+		match a.set(5, 15, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3775,30 +3673,30 @@ mod tests {
 	fn inserting_64_bit_vars_into_u32() {
 		let a : u32 = 0;
 		let b : u64 = 3;
-		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u32 = 0b0000_0000_0110_0011_0000_0000_0000_0000;
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u64(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_u64(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_u64(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a comiler warning claiming out of range for an i8.
@@ -3808,19 +3706,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i64(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
+		assert_eq!(a.set(28, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_1000);
 
 		// You cannot insert 40 bits into an u32
-		match a.set_i64(5, 40, b) {
+		match a.set(5, 40, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u32")),
 		}
 
 		// start + length must not exceed 32 bit (size of u32)
-		match a.set_i64(5, 30, b) {
+		match a.set(5, 30, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
@@ -3830,30 +3728,30 @@ mod tests {
 	fn inserting_64_bit_vars_into_u64() {
 		let a : u64 = 0;
 		let b : u64 = 3;
-		assert_eq!(a.set_u64(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
+		assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000);
 
 		let a : u64 = 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000;
 		let b : u64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_u64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_u64(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
+		assert_eq!(a.set(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_u64(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_u64(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
 
 		// b as positive signed integer
 		let b : i64 = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010;
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
 
 		// b as negative signed integer
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
@@ -3863,19 +3761,19 @@ mod tests {
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
-		assert_eq!(a.set_i64(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
+		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0110_0000);
 
 		// Use a big bit_offset
-		assert_eq!(a.set_i64(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
+		assert_eq!(a.set(45, 2, b).unwrap(), 0b0000_0000_0110_0011_0000_0000_0000_0000_0000_0000_0000_0100_0000_0000_0110_0000);
 
 		// You cannot insert 80 bits into an u64
-		match a.set_i64(5, 80, b) {
+		match a.set(5, 80, b) {
 			Ok(_) => panic!("The range check failed to detect invalid length"),
 			Err(e) => assert_eq!(e, s!(s!(LEN_TOO_BIG_MSG) + "u64")),
 		}
 
 		// start + length must not exceed 64 bit (size of u64)
-		match a.set_i64(5, 60, b) {
+		match a.set(5, 60, b) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
 			Err(e) => assert_eq!(e, s!(OUT_OF_RANGE_MSG)),
 		}
