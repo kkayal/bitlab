@@ -15,11 +15,11 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.7.1
+0.8.0
 
 # Usage
 
-1. In your Cargo.toml file, add `bitlab = "0.7"` under `[dependencies]`
+1. In your Cargo.toml file, add `bitlab = "0.8"` under `[dependencies]`
 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
 
 ## Example 1: 
@@ -75,6 +75,21 @@ assert_eq!(a.set(1, 2, b).unwrap(), 0b0110_0000);
 ```
 
 ## Example 5:
+
+Insert the value 3 (only 2 bits = 0b11) from a u8 into a vector
+at byte offset = 1 and bit offset = 15
+
+```rust
+use bitlab::*;
+let a : u8 = 3; // = 0b0000_0011
+let mut v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F };
+// relevant bytes = 0x6C_6C = 0b0110_110 --> 0_0 <-- 110_1100
+let bar = v.set(1, 15, 2, a);
+assert_eq!(v[2], 0b0110_1101);
+assert_eq!(v[3], 0b1110_1100);
+```
+
+## Example 6:
 
 There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the folloeing in the command line
 
