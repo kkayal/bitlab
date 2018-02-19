@@ -1,5 +1,6 @@
 //! [![Travis Build Status](https://api.travis-ci.org/kkayal/bitlab.svg?branch=master)](https://travis-ci.org/kkayal/bitlab)
 //! [![Build status](https://ci.appveyor.com/api/projects/status/drb2hj2hy1bcs9ve?svg=true)](https://ci.appveyor.com/project/kkayal/bitlab)
+//! [![Latest Version](https://img.shields.io/crates/v/bitlab.svg)](https://crates.io/crates/bitlab)
 //! 
 //! # Objective:
 //! 
