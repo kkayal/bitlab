@@ -17,7 +17,7 @@
 //! 
 //! # Version
 //! 
-//! 0.8.0
+//! 0.8.1
 //! 
 //! # Usage
 //! 
@@ -1893,8 +1893,6 @@ impl InsertBitsIntoVecU8 for Vec<u8> {
 
 		// Range checks
 		if length == 0 { return Err(s!(LEN_ZERO)); };
-
-		check_max_bit_offset!(byte_offset * 8 + bit_offset / 8 + 1);
 
 		if byte_offset * 8 + bit_offset + length > self.len() as u32 * 8 {
 			return Err(s!(OUT_OF_RANGE_MSG));
