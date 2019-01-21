@@ -13,6 +13,5 @@ fn main() {
 		_b = a.get_u8(5, 3).unwrap();
 	}
 
-#[derive(Debug)]
 	println!("Duration: {} seconds and {} nanoseconds for {} runs", now.elapsed().as_secs(), now.elapsed().subsec_nanos(), n-1);
 }

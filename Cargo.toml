@@ -1,6 +1,6 @@
 [package]
 name = "bitlab"
-version = "0.8.1"
+version = "0.8.2"
 authors = ["Kağan Kayal"]
 description = "Extracting a range of bits from a binary data source"
 documentation = "https://docs.rs/bitlab/"
@@ -10,10 +10,11 @@ readme = "README.md"
 keywords = ["bit", "extract", "binary"]
 categories = ["data-structures"]
 license = "MIT"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "kkayal/bitlab", branch = "master" }
-maintenance = { status = "experimental" }
+maintenance = { status = "passively-maintained" }
 
 [dependencies]
 num = "0.1"

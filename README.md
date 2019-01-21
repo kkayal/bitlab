@@ -8,7 +8,7 @@ To extract a range of bits from a binary data source or to insert a range of bit
 
 # Status
 
-Experimental
+passively-maintained
 
 # Documentation
 
@@ -16,7 +16,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-0.8.1
+0.8.2
 
 # Usage
 

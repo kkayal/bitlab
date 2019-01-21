@@ -8,7 +8,7 @@
 //! 
 //! # Status
 //! 
-//! Experimental
+//! passively-maintained
 //! 
 //! # Documentation
 //! 
@@ -17,7 +17,7 @@
 //! 
 //! # Version
 //! 
-//! 0.8.1
+//! 0.8.2
 //! 
 //! # Usage
 //! 
