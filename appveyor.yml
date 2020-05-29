@@ -75,15 +75,15 @@ before_deploy:
 #  - C:\Users\appveyor\.cargo\registry
 #  - target
 
-branches:
-  only:
+#branches:
+#  only:
     # Release tags
-    - /^v\d+\.\d+\.\d+.*$/
-    - master
+#    - /^v\d+\.\d+\.\d+.*$/
+#    - master
 
 notifications:
   - provider: Email
     on_build_success: false
 
 # Building is done in the test phase, so we disable Appveyor's build phase.
-build: false
+#build: false
