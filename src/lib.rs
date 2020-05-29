@@ -17,12 +17,7 @@
 //! 
 //! # Version
 //! 
-//! 0.8.2
-//! 
-//! # Usage
-//! 
-//! 1. In your Cargo.toml file, add `bitlab = "0.8"` under `[dependencies]`
-//! 2. In your source file, add `extern crate bitlab` and `use bitlab::*;`
+//! 1.0.0
 //! 
 //! ## Example 1: 
 //! 
@@ -232,7 +227,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)>;
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -240,7 +235,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)>;
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -248,7 +243,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)>;
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -256,7 +251,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)>;
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -264,7 +259,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)>;
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -272,7 +267,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)>;
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -280,7 +275,7 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)>;
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32>;
 
 	/// Extracts a range of bits and returns a Result object.
 	///
@@ -288,11 +283,11 @@ pub trait ExtractBitsFromIntegralTypes {
 	///
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)>;
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64>;
 }
 
 impl ExtractBitsFromIntegralTypes for u8 {
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -309,7 +304,7 @@ impl ExtractBitsFromIntegralTypes for u8 {
 		Ok(copy)
 	}
 
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -327,80 +322,80 @@ impl ExtractBitsFromIntegralTypes for u8 {
 	}
 
 	#[inline]
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		Ok(self.get_u8 (bit_offset, length)? as u16)
 	}
 
 	#[inline]
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		Ok(self.get_i8 (bit_offset, length)? as i16)
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		Ok(self.get_u8 (bit_offset, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		Ok(self.get_i8 (bit_offset, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		Ok(self.get_u8 (bit_offset, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		Ok(self.get_i8 (bit_offset, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i8 {
 	#[inline]
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		(self as u8).get_u8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		(self as u8).get_i8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		(self as u8).get_u16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		(self as u8).get_i16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		(self as u8).get_u32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		(self as u8).get_i32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		(self as u8).get_u64 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		(self as u8).get_i64 (bit_offset, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u16 {
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -409,7 +404,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_u16 (bit_offset, length)? as u8)
 	}
 
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -418,7 +413,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(self.get_i16 (bit_offset, length)? as i8)
 	}
 
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -435,7 +430,7 @@ impl ExtractBitsFromIntegralTypes for u16 {
 		Ok(copy)
 	}
 
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -453,70 +448,70 @@ impl ExtractBitsFromIntegralTypes for u16 {
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		Ok(self.get_u16 (bit_offset, length)? as u32)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		Ok(self.get_i16 (bit_offset, length)? as i32)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		Ok(self.get_u16 (bit_offset, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		Ok(self.get_i16 (bit_offset, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i16 {
 	#[inline]
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		(self as u16).get_u8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		(self as u16).get_i8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		(self as u16).get_u16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		(self as u16).get_i16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		(self as u16).get_u32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		(self as u16).get_i32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		(self as u16).get_u64 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		(self as u16).get_i64 (bit_offset, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u32 {
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -525,7 +520,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32 (bit_offset, length)? as u8)
 	}
 
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -534,7 +529,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_i32 (bit_offset, length)? as i8)
 	}
 
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
@@ -543,7 +538,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_u32 (bit_offset, length)? as u16)
 	}
 
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
@@ -552,7 +547,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(self.get_i32 (bit_offset, length)? as i16)
 	}
 
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -569,7 +564,7 @@ impl ExtractBitsFromIntegralTypes for u32 {
 		Ok(copy)
 	}
 
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -587,60 +582,60 @@ impl ExtractBitsFromIntegralTypes for u32 {
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		Ok(self.get_u32 (bit_offset, length)? as u64)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		Ok(self.get_i32 (bit_offset, length)? as i64)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for i32 {
 	#[inline]
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		(self as u32).get_u8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		(self as u32).get_i8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		(self as u32).get_u16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		(self as u32).get_i16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		(self as u32).get_u32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		(self as u32).get_i32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		(self as u32).get_u64 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		(self as u32).get_i64 (bit_offset, length)
 	}
 }
 
 impl ExtractBitsFromIntegralTypes for u64 {
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u8");
 		}
@@ -649,7 +644,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64 (bit_offset, length)? as u8)
 	}
 
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		if length > 8 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i8");
 		}
@@ -658,7 +653,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64 (bit_offset, length)? as i8)
 	}
 
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u16");
 		}
@@ -667,7 +662,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64 (bit_offset, length)? as u16)
 	}
 
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		if length > 16 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i16");
 		}
@@ -676,7 +671,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64 (bit_offset, length)? as i16)
 	}
 
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		if length > 32 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "u32");
 		}
@@ -685,7 +680,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_u64 (bit_offset, length)? as u32)
 	}
 
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		if length > 32 {
 			return Err(s!(LEN_TOO_BIG_MSG) + "i32");
 		}
@@ -694,7 +689,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(self.get_i64 (bit_offset, length)? as i32)
 	}
 
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		check_range!(bit_offset, length);
 
 		// Don't touch the original
@@ -711,7 +706,7 @@ impl ExtractBitsFromIntegralTypes for u64 {
 		Ok(copy)
 	}
 
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		// Check if the desired range is valid
 		check_range!(bit_offset, length);
 
@@ -732,42 +727,42 @@ impl ExtractBitsFromIntegralTypes for u64 {
 
 impl ExtractBitsFromIntegralTypes for i64 {
 	#[inline]
-	fn get_u8(self, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(self, bit_offset: u32, length: u32) -> Result<u8> {
 		(self as u64).get_u8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i8(self, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(self, bit_offset: u32, length: u32) -> Result<i8> {
 		(self as u64).get_i8 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u16(self, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(self, bit_offset: u32, length: u32) -> Result<u16> {
 		(self as u64).get_u16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i16(self, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(self, bit_offset: u32, length: u32) -> Result<i16> {
 		(self as u64).get_i16 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u32(self, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(self, bit_offset: u32, length: u32) -> Result<u32> {
 		(self as u64).get_u32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i32(self, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(self, bit_offset: u32, length: u32) -> Result<i32> {
 		(self as u64).get_i32 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_u64(self, bit_offset: u32, length: u32) -> Result<(u64)> {
+	fn get_u64(self, bit_offset: u32, length: u32) -> Result<u64> {
 		(self as u64).get_u64 (bit_offset, length)
 	}
 
 	#[inline]
-	fn get_i64(self, bit_offset: u32, length: u32) -> Result<(i64)> {
+	fn get_i64(self, bit_offset: u32, length: u32) -> Result<i64> {
 		(self as u64).get_i64 (bit_offset, length)
 	}
 }
@@ -783,7 +778,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u8(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u8)>;
+	fn get_u8(&self, byte_offset: u32, start: u32, length: u32) -> Result<u8>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 8 bit integer or an error message.
 	///
@@ -792,7 +787,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i8(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i8)>;
+	fn get_i8(&self, byte_offset: u32, start: u32, length: u32) -> Result<i8>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 16 bit unsigned integer or an error message.
 	///
@@ -801,7 +796,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u16(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u16)>;
+	fn get_u16(&self, byte_offset: u32, start: u32, length: u32) -> Result<u16>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 16 bit integer or an error message.
 	///
@@ -810,7 +805,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i16(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i16)>;
+	fn get_i16(&self, byte_offset: u32, start: u32, length: u32) -> Result<i16>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 32 bit unsigned integer or an error message.
 	///
@@ -819,7 +814,7 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_u32(&self, byte_offset: u32, start: u32, length: u32) -> Result<(u32)>;
+	fn get_u32(&self, byte_offset: u32, start: u32, length: u32) -> Result<u32>;
 
 	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 32 bit integer or an error message.
 	///
@@ -828,13 +823,13 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **byte_offset** (u32) the number of bytes to skip in source
 	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
 	/// - **length** (u32) the number of bits to be extracted.
-	fn get_i32(&self, byte_offset: u32, start: u32, length: u32) -> Result<(i32)>;
+	fn get_i32(&self, byte_offset: u32, start: u32, length: u32) -> Result<i32>;
 
 	// TODO: Add get_u64 and get_i64
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
-	fn get_u8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u8)> {
+	fn get_u8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<u8> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 8 {
@@ -886,7 +881,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i8)> {
+	fn get_i8(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<i8> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 8 {
@@ -938,7 +933,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u16)> {
+	fn get_u16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<u16> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 16 {
@@ -1018,7 +1013,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i16)> {
+	fn get_i16(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<i16> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 16 {
@@ -1098,7 +1093,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_u32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(u32)> {
+	fn get_u32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<u32> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 32 {
@@ -1236,7 +1231,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 		}
 	}
 
-	fn get_i32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<(i32)> {
+	fn get_i32(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<i32> {
 		if length == 0 { return Err(s!(LEN_ZERO)); };
 
 		if length <= 32 {
@@ -1382,7 +1377,7 @@ pub trait SingleBits {
 	/// Parameters:
 	///
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized;
 
 	/// Tests a single bit and returns true or false in a Result object
 	///
@@ -1392,18 +1387,18 @@ pub trait SingleBits {
 	/// Parameters:
 	///
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)>;
+	fn get_bit(self, bit_offset: u32) -> Result<bool>;
 
 	/// Clears a single bit and then returns a Result Object, which contains the modified varibale
 	///
 	/// Parameters:
 	///
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized;
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized;
 }
 
 impl SingleBits for u8 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1417,7 +1412,7 @@ impl SingleBits for u8 {
 		Ok(copy)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1435,7 +1430,7 @@ impl SingleBits for u8 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
@@ -1451,7 +1446,7 @@ impl SingleBits for u8 {
 }
 
 impl SingleBits for i8 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1465,7 +1460,7 @@ impl SingleBits for i8 {
 		Ok(copy as i8)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1483,7 +1478,7 @@ impl SingleBits for i8 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
@@ -1499,7 +1494,7 @@ impl SingleBits for i8 {
 }
 
 impl SingleBits for u16 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1513,7 +1508,7 @@ impl SingleBits for u16 {
 		Ok(copy)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1531,7 +1526,7 @@ impl SingleBits for u16 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1547,7 +1542,7 @@ impl SingleBits for u16 {
 }
 
 impl SingleBits for i16 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1561,7 +1556,7 @@ impl SingleBits for i16 {
 		Ok(copy as i16)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1579,7 +1574,7 @@ impl SingleBits for i16 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1595,7 +1590,7 @@ impl SingleBits for i16 {
 }
 
 impl SingleBits for u32 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1609,7 +1604,7 @@ impl SingleBits for u32 {
 		Ok(copy)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1627,7 +1622,7 @@ impl SingleBits for u32 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1643,7 +1638,7 @@ impl SingleBits for u32 {
 }
 
 impl SingleBits for i32 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1657,7 +1652,7 @@ impl SingleBits for i32 {
 		Ok(copy as i32)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1675,7 +1670,7 @@ impl SingleBits for i32 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1691,7 +1686,7 @@ impl SingleBits for i32 {
 }
 
 impl SingleBits for u64 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1705,7 +1700,7 @@ impl SingleBits for u64 {
 		Ok(copy)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1723,7 +1718,7 @@ impl SingleBits for u64 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1739,7 +1734,7 @@ impl SingleBits for u64 {
 }
 
 impl SingleBits for i64 {
-	fn set_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1753,7 +1748,7 @@ impl SingleBits for i64 {
 		Ok(copy as i64)
 	}
 
-	fn get_bit(self, bit_offset: u32) -> Result<(bool)> {
+	fn get_bit(self, bit_offset: u32) -> Result<bool> {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1771,7 +1766,7 @@ impl SingleBits for i64 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<(Self)> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1794,7 +1789,7 @@ pub trait InsertIntoSizedIntegerTypes {
 	/// - **bit offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit  
 	/// - **length** (u32) the number of bits to be extracted (at the least significant side).
 	/// - **value** (Any sized integer type) the value to be inserted.
-	fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<(Self)>
+	fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<Self>
 		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
@@ -1806,7 +1801,7 @@ pub trait InsertIntoSizedIntegerTypes {
 // The first parameter ($t) is the variable type to be inserted ($t)
 macro_rules! def_set_fn {
 	($t:ty) => (
-		fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<(Self)>
+		fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<Self>
 		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,

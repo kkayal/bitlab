@@ -1,5 +1,3 @@
-extern crate bitlab;
-
 use bitlab::*;
 use std::time::{Instant};
 
