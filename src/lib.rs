@@ -17,7 +17,7 @@
 //! 
 //! # Version
 //! 
-//! 1.0.0
+//! 1.1.0
 //! 
 //! ## Example 1: 
 //! 
@@ -154,7 +154,7 @@ impl TypeInfo for i64 { fn type_of(&self) -> &'static str {"i64"} }
 impl TypeInfo for f32 { fn type_of(&self) -> &'static str {"f32"} }
 impl TypeInfo for f64 { fn type_of(&self) -> &'static str {"f64"} }
 
-/// A trait to find out if a varibale type is signed or unsigned for integer types.
+/// A trait to find out if a variable type is signed or unsigned for integer types.
 pub trait SignedInfo{
 	/// Returns true if the variable is signed.
 	fn is_signed(&self) -> bool;
@@ -169,7 +169,7 @@ impl SignedInfo for i16 { fn is_signed(&self) -> bool { true  } }
 impl SignedInfo for i32 { fn is_signed(&self) -> bool { true  } }
 impl SignedInfo for i64 { fn is_signed(&self) -> bool { true  } }
 
-// Convinience macro to shorten String::from("hello") to s!("hello")
+// Convenience macro to shorten String::from("hello") to s!("hello")
 macro_rules! s {
 	( $x:expr ) => { String::from($x); };
 }
@@ -195,7 +195,7 @@ macro_rules! check_range {
 
 /// How many bits does it take to write an unsigned integer?
 pub fn n_required_bits_for_an_unsigned_int(num: u64) -> u32 {
-	// TODO: The performance can be probaly improved by a clever lookup strategy
+	// TODO: The performance can be probably improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.log2();
 	if j > 0_f64 {
@@ -206,7 +206,7 @@ pub fn n_required_bits_for_an_unsigned_int(num: u64) -> u32 {
 
 /// How many bits does it take to write a signed integer?
 pub fn n_required_bits_for_a_signed_int(num: i64) -> u32 {
-	// TODO: The performance can be probaly improved by a clever lookup strategy
+	// TODO: The performance can be probably improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.abs().log2();
 	if j > 0_f64 {
@@ -825,7 +825,23 @@ pub trait ExtractBitsFromVecU8 {
 	/// - **length** (u32) the number of bits to be extracted.
 	fn get_i32(&self, byte_offset: u32, start: u32, length: u32) -> Result<i32>;
 
-	// TODO: Add get_u64 and get_i64
+	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a 64 bit unsigned integer or an error message.
+	///
+	/// Parameters:
+	///
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_u64(&self, byte_offset: u32, start: u32, length: u32) -> Result<u64>;
+
+	/// Extracts a range of bits from a Vec<u8> and returns a Result object containing a signed 64 bit integer or an error message.
+	///
+	/// Parameters:
+	///
+	/// - **byte_offset** (u32) the number of bytes to skip in source
+	/// - **bit_offset** (u32) the start position of the bits to be extracted. Zero is the most significant bit
+	/// - **length** (u32) the number of bits to be extracted.
+	fn get_i64(&self, byte_offset: u32, start: u32, length: u32) -> Result<i64>;
 }
 
 impl ExtractBitsFromVecU8 for Vec<u8> {
@@ -844,7 +860,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				if bit_offset_copy + length <= 8 {
 					let mut copy: u8 = self[byte_offset_copy as usize];
 					// Assume that the data is given in big endian and
-					// convert it to whatever endiannes we have on the users machine
+					// convert it to whatever endianness we have on the users machine
 					copy = u8::from_be(copy);
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
@@ -896,7 +912,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				if bit_offset_copy + length <= 8 {
 					let mut copy: i8 = self[byte_offset_copy as usize] as i8;
 					// Assume that the data is given in big endian and
-					// convert it to whatever endiannes we have on the users machine
+					// convert it to whatever endianness we have on the users machine
 					copy = i8::from_be(copy);
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
@@ -963,8 +979,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as u16;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as u16;
@@ -984,7 +1000,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1043,8 +1059,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as i16;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as i16;
@@ -1064,7 +1080,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1123,14 +1139,14 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as u32;
 					// copy2 <<= 0;
 
-					// Logical OR these two to get the original 2 bytes
+					// Logical OR these two to get the original two bytes
 					let mut copy3 = copy1 | copy2;
 
 					// Lets clear the bits on both sides of the range of bits of interest
@@ -1145,7 +1161,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1154,7 +1170,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let copy3 = self[byte_offset_copy as usize + 2] as u32;
 					// copy3 <<= 0;
 
-					// Logical OR these two to get the original 3 bytes
+					// Logical OR these three to get the original three bytes
 					let mut copy4 = copy1 | copy2 | copy3;
 
 					// Lets clear the bits on both sides of the range of bits of interest
@@ -1169,7 +1185,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 24;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1181,7 +1197,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let copy4 = self[byte_offset_copy as usize + 3] as u32;
 					// copy4 <<= 0;
 
-					// Logical OR these two to get the original 3 bytes
+					// Logical OR these four to get the original four bytes
 					let mut copy5 = copy1 | copy2 | copy3 | copy4;
 
 					// Lets clear the bits on both sides of the range of bits of interest
@@ -1196,7 +1212,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u64;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 32;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
@@ -1211,7 +1227,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let copy5 = self[byte_offset_copy as usize + 4] as u64;
 					// copy5 <<= 0;
 
-					// Logical OR these two to get the original 3 bytes
+					// Logical OR these five to get the original five bytes
 					let mut copy6 = copy1 | copy2 | copy3 | copy4 | copy5;
 
 					// Lets clear the bits on both sides of the range of bits of interest
@@ -1261,8 +1277,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1283,7 +1299,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1307,7 +1323,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 24;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1334,7 +1350,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i64;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 32;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
@@ -1368,6 +1384,582 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 			return Err(s!(OUT_OF_RANGE_MSG))
 		}
 	}
+
+	fn get_u64(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<u64> {
+		if length == 0 { return Err(s!(LEN_ZERO)); };
+	
+		if length <= 64 {
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
+				let mut byte_offset_copy = byte_offset;
+				let mut bit_offset_copy = bit_offset;
+	
+				byte_offset_copy += bit_offset_copy / 8;			// Integer division!
+				bit_offset_copy -= (bit_offset_copy / 8) * 8;
+	
+				if bit_offset_copy + length <= 8 {
+					// Don't touch the original
+					let copy1 = self[byte_offset_copy as usize] as u8;
+	
+					// Expand to u64
+					let mut copy2 = copy1 as u64;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy2 <<= 56 + bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy2 >>= 64 - length;
+	
+					return Ok(copy2);
+				} else if bit_offset_copy + length <= 16 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 8;
+	
+					let copy2 = self[byte_offset_copy as usize + 1] as u64;
+					// copy2 <<= 0;
+	
+					// Logical OR these two to get the original 2 bytes
+					let mut copy3 = copy1 | copy2;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy3 <<= bit_offset_copy + 48;
+	
+					// Second, push it all to the right end
+					copy3 >>= 64 - length;
+	
+					return Ok(copy3);
+				} else if bit_offset_copy + length <= 24 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 16;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 8;
+	
+					let copy3 = self[byte_offset_copy as usize + 2] as u64;
+					// copy3 <<= 0;
+	
+					// Logical OR these three to get the original three bytes
+					let mut copy4 = copy1 | copy2 | copy3;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy4 <<= bit_offset_copy + 40;
+	
+					// Second, push it all to the right end
+					copy4 >>= 64 - length;
+	
+					return Ok(copy4 as u64);
+				} else if bit_offset_copy + length <= 32 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 24;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 16;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
+					copy3 <<= 8;
+	
+					let copy4 = self[byte_offset_copy as usize + 3] as u64;
+					// copy4 <<= 0;
+	
+					// Logical OR these four to get the original four bytes
+					let mut copy5 = copy1 | copy2 | copy3 | copy4;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy5 <<= bit_offset_copy + 32;
+	
+					// Second, push it all to the right end
+					copy5 >>= 64 - length;
+	
+					return Ok(copy5 as u64);
+				} else if bit_offset_copy + length <= 40 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 32;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 24;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
+					copy3 <<= 16;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u64;
+					copy4 <<= 8;
+	
+					let copy5 = self[byte_offset_copy as usize + 4] as u64;
+					// copy5 <<= 0;
+	
+					// Logical OR these five to get the original five bytes
+					let mut copy6 = copy1 | copy2 | copy3 | copy4 | copy5;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy6 <<= bit_offset_copy + 24;
+	
+					// Second, push it all to the right end
+					copy6 >>= 64 - length;
+	
+					return Ok(copy6 as u64);
+				} else if bit_offset_copy + length <= 48 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 40;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 32;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
+					copy3 <<= 24;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u64;
+					copy4 <<= 16;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as u64;
+					copy5 <<= 8;
+	
+					let copy6 = self[byte_offset_copy as usize + 5] as u64;
+					// copy6 <<= 0;
+	
+					// Logical OR these six to get the original six bytes
+					let mut copy7 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy7 <<= bit_offset_copy + 16;
+	
+					// Second, push it all to the right end
+					copy7 >>= 64 - length;
+	
+					return Ok(copy7 as u64);
+				} else if bit_offset_copy + length <= 56 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 48;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 40;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
+					copy3 <<= 32;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u64;
+					copy4 <<= 24;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as u64;
+					copy5 <<= 16;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as u64;
+					copy6 <<= 8;
+	
+					let copy7 = self[byte_offset_copy as usize + 6] as u64;
+					// copy7 <<= 0;
+	
+					// Logical OR these seven to get the original seven bytes
+					let mut copy8 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy8 <<= bit_offset_copy + 8;
+	
+					// Second, push it all to the right end
+					copy8 >>= 64 - length;
+	
+					return Ok(copy8 as u64);
+				} else if bit_offset_copy + length <= 64 {
+					let mut copy1 = self[byte_offset_copy as usize] as u64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 56;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
+					copy2 <<= 48;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u64;
+					copy3 <<= 40;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u64;
+					copy4 <<= 32;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as u64;
+					copy5 <<= 24;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as u64;
+					copy6 <<= 16;
+	
+					let mut copy7 = self[byte_offset_copy as usize + 6] as u64;
+					copy7 <<= 8;
+	
+					let copy8 = self[byte_offset_copy as usize + 7] as u64;
+					// copy8 <<= 0;
+	
+					// Logical OR these eight to get the original eight bytes
+					let mut copy9 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7 | copy8;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy9 <<= bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy9 >>= 64 - length;
+	
+					return Ok(copy9 as u64);
+				} else {
+					let mut copy1 = self[byte_offset_copy as usize] as u128;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 64;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u128;
+					copy2 <<= 56;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u128;
+					copy3 <<= 48;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u128;
+					copy4 <<= 40;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as u128;
+					copy5 <<= 32;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as u128;
+					copy6 <<= 24;
+	
+					let mut copy7 = self[byte_offset_copy as usize + 6] as u128;
+					copy7 <<= 16;
+	
+					let mut copy8 = self[byte_offset_copy as usize + 7] as u128;
+					copy8 <<= 8;
+	
+					let copy9 = self[byte_offset_copy as usize + 8] as u128;
+					// copy9 <<= 0;
+	
+					// Logical OR these two to get the original 3 bytes
+					let mut copy10 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7 | copy8 | copy9;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy10 <<= 56 + bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy10 >>= 128 - length;
+	
+					return Ok(copy10 as u64);
+				}
+			} else {
+				return Err(s!(OUT_OF_RANGE_MSG))
+			}
+		} else {
+			return Err(s!(OUT_OF_RANGE_MSG))
+		}
+	}
+
+	fn get_i64(&self, byte_offset: u32, bit_offset: u32, length: u32) -> Result<i64> {
+		if length == 0 { return Err(s!(LEN_ZERO)); };
+	
+		if length <= 64 {
+			if self.len() as u32 * 8 >= byte_offset * 8 + bit_offset + length { // Ensure that we stay within the vector
+				// if the bit offset is > 7 increase the byte offset as needed and reduce the bit offset until bit offset is <= 7
+				let mut byte_offset_copy = byte_offset;
+				let mut bit_offset_copy = bit_offset;
+	
+				byte_offset_copy += bit_offset_copy / 8;			// Integer division!
+				bit_offset_copy -= (bit_offset_copy / 8) * 8;
+	
+				if bit_offset_copy + length <= 8 {
+					// Don't touch the original
+					let copy1 = self[byte_offset_copy as usize] as i8;
+	
+					// Expand to i64
+					let mut copy2 = copy1 as i64;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy2 <<= 56 + bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy2 >>= 64 - length;
+	
+					return Ok(copy2);
+				} else if bit_offset_copy + length <= 16 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 8;
+	
+					let copy2 = self[byte_offset_copy as usize + 1] as i64;
+					// copy2 <<= 0;
+	
+					// Logical OR these two to get the original 2 bytes
+					let mut copy3 = copy1 | copy2;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy3 <<= bit_offset_copy + 48;
+	
+					// Second, push it all to the right end
+					copy3 >>= 64 - length;
+	
+					return Ok(copy3);
+				} else if bit_offset_copy + length <= 24 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 16;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 8;
+	
+					let copy3 = self[byte_offset_copy as usize + 2] as i64;
+					// copy3 <<= 0;
+	
+					// Logical OR these three to get the original three bytes
+					let mut copy4 = copy1 | copy2 | copy3;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy4 <<= bit_offset_copy + 40;
+	
+					// Second, push it all to the right end
+					copy4 >>= 64 - length;
+	
+					return Ok(copy4 as i64);
+				} else if bit_offset_copy + length <= 32 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 24;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 16;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
+					copy3 <<= 8;
+	
+					let copy4 = self[byte_offset_copy as usize + 3] as i64;
+					// copy4 <<= 0;
+	
+					// Logical OR these four to get the original four bytes
+					let mut copy5 = copy1 | copy2 | copy3 | copy4;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy5 <<= bit_offset_copy + 32;
+	
+					// Second, push it all to the right end
+					copy5 >>= 64 - length;
+	
+					return Ok(copy5 as i64);
+				} else if bit_offset_copy + length <= 40 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 32;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 24;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
+					copy3 <<= 16;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as i64;
+					copy4 <<= 8;
+	
+					let copy5 = self[byte_offset_copy as usize + 4] as i64;
+					// copy5 <<= 0;
+	
+					// Logical OR these five to get the original five bytes
+					let mut copy6 = copy1 | copy2 | copy3 | copy4 | copy5;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy6 <<= bit_offset_copy + 24;
+	
+					// Second, push it all to the right end
+					copy6 >>= 64 - length;
+	
+					return Ok(copy6 as i64);
+				} else if bit_offset_copy + length <= 48 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 40;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 32;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
+					copy3 <<= 24;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as i64;
+					copy4 <<= 16;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as i64;
+					copy5 <<= 8;
+	
+					let copy6 = self[byte_offset_copy as usize + 5] as i64;
+					// copy6 <<= 0;
+	
+					// Logical OR these six to get the original six bytes
+					let mut copy7 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy7 <<= bit_offset_copy + 16;
+	
+					// Second, push it all to the right end
+					copy7 >>= 64 - length;
+	
+					return Ok(copy7 as i64);
+				} else if bit_offset_copy + length <= 56 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 48;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 40;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
+					copy3 <<= 32;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as i64;
+					copy4 <<= 24;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as i64;
+					copy5 <<= 16;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as i64;
+					copy6 <<= 8;
+	
+					let copy7 = self[byte_offset_copy as usize + 6] as i64;
+					// copy7 <<= 0;
+	
+					// Logical OR these seven to get the original seven bytes
+					let mut copy8 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy8 <<= bit_offset_copy + 8;
+	
+					// Second, push it all to the right end
+					copy8 >>= 64 - length;
+	
+					return Ok(copy8 as i64);
+				} else if bit_offset_copy + length <= 64 {
+					let mut copy1 = self[byte_offset_copy as usize] as i64;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 56;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
+					copy2 <<= 48;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as i64;
+					copy3 <<= 40;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as i64;
+					copy4 <<= 32;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as i64;
+					copy5 <<= 24;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as i64;
+					copy6 <<= 16;
+	
+					let mut copy7 = self[byte_offset_copy as usize + 6] as i64;
+					copy7 <<= 8;
+	
+					let copy8 = self[byte_offset_copy as usize + 7] as i64;
+					// copy8 <<= 0;
+	
+					// Logical OR these eight to get the original eight bytes
+					let mut copy9 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7 | copy8;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy9 <<= bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy9 >>= 64 - length;
+	
+					return Ok(copy9 as i64);
+				} else {
+					let mut copy1 = self[byte_offset_copy as usize] as u128;
+	
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
+					copy1 <<= 64;
+	
+					let mut copy2 = self[byte_offset_copy as usize + 1] as u128;
+					copy2 <<= 56;
+	
+					let mut copy3 = self[byte_offset_copy as usize + 2] as u128;
+					copy3 <<= 48;
+	
+					let mut copy4 = self[byte_offset_copy as usize + 3] as u128;
+					copy4 <<= 40;
+	
+					let mut copy5 = self[byte_offset_copy as usize + 4] as u128;
+					copy5 <<= 32;
+	
+					let mut copy6 = self[byte_offset_copy as usize + 5] as u128;
+					copy6 <<= 24;
+	
+					let mut copy7 = self[byte_offset_copy as usize + 6] as u128;
+					copy7 <<= 16;
+	
+					let mut copy8 = self[byte_offset_copy as usize + 7] as u128;
+					copy8 <<= 8;
+	
+					let copy9 = self[byte_offset_copy as usize + 8] as u128;
+					// copy9 <<= 0;
+	
+					// Logical OR these two to get the original 3 bytes
+					let mut copy10 = copy1 | copy2 | copy3 | copy4 | copy5 | copy6 | copy7 | copy8 | copy9;
+	
+					// Lets clear the bits on both sides of the range of bits of interest
+					// First clear the ones on the left side
+					copy10 <<= 56 + bit_offset_copy;
+	
+					// Second, push it all to the right end
+					copy10 >>= 128 - length;
+	
+					return Ok(copy10 as i64);
+				}
+			} else {
+				return Err(s!(OUT_OF_RANGE_MSG))
+			}
+		} else {
+			return Err(s!(OUT_OF_RANGE_MSG))
+		}
+	}
 }
 
 /// Defines a set of functions to get, set and clear single bits
@@ -1389,7 +1981,7 @@ pub trait SingleBits {
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
 	fn get_bit(self, bit_offset: u32) -> Result<bool>;
 
-	/// Clears a single bit and then returns a Result Object, which contains the modified varibale
+	/// Clears a single bit and then returns a Result Object, which contains the modified variable
 	///
 	/// Parameters:
 	///
@@ -1953,7 +2545,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_number_of_bits_required_for_an_unsinged_integer() {
+	fn test_number_of_bits_required_for_an_unsigned_integer() {
 		assert_eq!(n_required_bits_for_an_unsigned_int(0), 1);
 		assert_eq!(n_required_bits_for_an_unsigned_int(1), 1);
 		assert_eq!(n_required_bits_for_an_unsigned_int(2), 2);
@@ -2384,7 +2976,7 @@ mod tests {
 			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
-		// Even if all three parametrs are individually within their range,
+		// Even if all three parameters are individually within their range,
 		// the combination might leak outside the vector
 		match v.get_u16(4, 7, 10) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
@@ -2398,7 +2990,7 @@ mod tests {
 		// The variable bindings below are not mutable, so
 		// the compiler would not compile this file in the first place, if
 		// there was a problem with that.
-		// Still let's keep them in the unit tetst for the better understanding.
+		// Still let's keep them in the unit tests for better understanding.
 
 		let a: u8 = 0x05;
 		let _b = a.get_u16(3, 4).unwrap();
@@ -2756,7 +3348,127 @@ mod tests {
 		// 64 Bit
 		//
 
-		// TODO: Add the 64 bit tests when they are implemented
+		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x65, 0x6C, 0x74, 0x21 };
+
+		// Simple 1 for get_u64
+		let bar = v.get_u64(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
+		assert_eq!(bar.unwrap(), 2);
+
+		// Simple 2 for get_u64
+		let bar = v.get_u64(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
+		assert_eq!(bar.unwrap(), 5);
+
+		// Simple 3 for get_u64
+		let bar = v.get_u64(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
+		assert_eq!(bar.unwrap(), 15);
+
+		// Simple 4 for get_u64
+		let bar = v.get_u64(5, 3, 16); // relevant bytes = 0x2C2057 = 0b001 --> 0_1100_0010_0000_010 <-- 1_0111
+		assert_eq!(bar.unwrap(), 24834);
+
+		// Simple 5 for get_u64
+		let bar = v.get_u64(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
+		assert_eq!(bar.unwrap(), 101723058);
+
+		// Simple 6 for get_u64
+		let bar = v.get_u64(5, 0, 32); // relevant bytes = 0x2C205765 = 0b0010_1100_0010_0000_0101_0111_0110_0101
+		assert_eq!(bar.unwrap(), 740317029);
+
+		// Simple 7 for get_u64
+		let bar = v.get_u64(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 1627568939);
+
+		// Simple 8 for get_u64
+		let bar = v.get_u64(1, 3, 40); // relevant bytes = 0x616C6C6F2C20 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_001 <-- 0_0000
+		assert_eq!(bar.unwrap(), 48912103777);
+
+		// Simple 9 for get_u64
+		let bar = v.get_u64(0, 11, 40); // relevant bytes = 0x616C6C6F2C20 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_001 <-- 0_0000
+		assert_eq!(bar.unwrap(), 48912103777);
+
+		// Simple 10 for get_u64
+		let bar = v.get_u64(1, 3, 48); // relevant bytes = 0x616C6C6F2C2057 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_010 <-- 1_0111
+		assert_eq!(bar.unwrap(), 12521498566914);
+
+		// Simple 11 for get_u64
+		let bar = v.get_u64(1, 3, 54); // relevant bytes = 0x616C6C6F2C205765 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_0101_0111_0 <-- 110_0101
+		assert_eq!(bar.unwrap(), 801375908282542);
+
+		// Use full length + an offset for get_u64
+		let bar = v.get_u64(1, 3, 64); // relevant bytes = 0x616C6C6F2C2057656C = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 820608930081323819);
+
+		// Get a u64 from a range, which spans over 5 bytes
+		let bar = v.get_u64(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
+		assert_eq!(bar.unwrap(), 47765726); // 0b0110_000 --> 1_0110_1100_0110_1100_0110_1111_0 <-- 010_1100
+
+		// Use a large bit offset
+		let bar = v.get_u64(0, 36, 3);   // Relevant bytes = 0x6F
+		assert_eq!(bar.unwrap(), 7); // 0b0110_ --> 111 <-- 1
+
+		// Now signed integers
+
+		let v: Vec<u8> = vec!{ 0x48, 0x61, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x65, 0x6C, 0x74, 0x21 };
+
+		// Simple 1 for get_u64
+		let bar = v.get_i64(0, 0, 3); // relevant bytes = 0x48 = 0b --> 010 <-- 0_1000
+		assert_eq!(bar.unwrap(), 2);
+
+		// Simple 2 for get_u64
+		let bar = v.get_i64(1, 7, 3); // relevant bytes = 0x616C = 0b0110000  --> 101 <-- 101100
+		assert_eq!(bar.unwrap(), -3);
+
+		// Simple 3 for get_u64
+		let bar = v.get_i64(4, 3, 5); // relevant bytes = 0x6F = 0b011 --> 0_1111 <--
+		assert_eq!(bar.unwrap(), 15);
+
+		// Simple 4 for get_u64
+		let bar = v.get_i64(5, 4, 16); // relevant bytes = 0x2C2057 = 0b0010 --> 1100_0010_0000_0101 <-- 0111
+		assert_eq!(bar.unwrap(), -15867);
+
+		// Simple 5 for get_u64
+		let bar = v.get_i64(5, 3, 28); // relevant bytes = 0x2C205765 = 0b001 --> 0_1100_0010_0000_0101_0111_0110_010 <-- 1
+		assert_eq!(bar.unwrap(), 101723058);
+
+		// Simple 6 for get_u64
+		let bar = v.get_i64(5, 0, 32); // relevant bytes = 0x2C205765 = 0b0010_1100_0010_0000_0101_0111_0110_0101
+		assert_eq!(bar.unwrap(), 740317029);
+
+		// Simple 7 for get_u64
+		let bar = v.get_i64(5, 3, 32); // relevant bytes = 0x2C2057656C = 0b001 --> 0_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 1627568939);
+
+		// Simple 8 for get_u64
+		let bar = v.get_i64(1, 3, 40); // relevant bytes = 0x616C6C6F2C20 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_001 <-- 0_0000
+		assert_eq!(bar.unwrap(), 48912103777);
+
+		// Simple 9 for get_u64
+		let bar = v.get_i64(0, 11, 40); // relevant bytes = 0x616C6C6F2C20 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_001 <-- 0_0000
+		assert_eq!(bar.unwrap(), 48912103777);
+
+		// Simple 10 for get_u64
+		let bar = v.get_i64(1, 3, 48); // relevant bytes = 0x616C6C6F2C2057 = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_010 <-- 1_0111
+		assert_eq!(bar.unwrap(), 12521498566914);
+
+		// Simple 11 for get_u64
+		let bar = v.get_i64(1, 2, 55); // relevant bytes = 0x616C6C6F2C205765 = 0b01 --> 10_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_0101_0111_0 <-- 110_0101
+		assert_eq!(bar.unwrap(), -17213022601199442);
+
+		// Use full length + an offset for get_u64
+		let bar = v.get_i64(1, 3, 64); // relevant bytes = 0x616C6C6F2C2057656C = 0b011 --> 0_0001_0110_1100_0110_1100_0110_1111_0010_1100_0010_0000_0101_0111_0110_0101_011 <-- 0_1100
+		assert_eq!(bar.unwrap(), 820608930081323819);
+
+		// Get a i64 from a range, which spans over 5 bytes
+		let bar = v.get_i64(1, 7, 26); // Relevant bytes = 0x61, 0x6C, 0x6C, 0x6F, 0x2C
+		assert_eq!(bar.unwrap(), -19343138); // 0b0110_000 --> 1_0110_1100_0110_1100_0110_1111_0 <-- 010_1100
+
+		// Use a large bit offset
+		let bar = v.get_i64(0, 36, 3);   // Relevant bytes = 0x6F
+		assert_eq!(bar.unwrap(), -1); // 0b0110_ --> 111 <-- 1
+
+		// Use a large bit offset
+		let bar = v.get_i64(0, 35, 4);   // Relevant bytes = 0x6F
+		assert_eq!(bar.unwrap(), 7); // 0b011 --> 0111 <-- 1
 	}
 
 	#[test]
@@ -3007,7 +3719,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3074,7 +3786,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3145,7 +3857,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3216,7 +3928,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3277,7 +3989,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3329,7 +4041,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3384,7 +4096,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3439,7 +4151,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3492,7 +4204,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3544,7 +4256,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3599,7 +4311,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3654,7 +4366,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3706,7 +4418,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3758,7 +4470,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3810,10 +4522,10 @@ mod tests {
 		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 0b11111111 as i8 gives a comiler warning claiming out of range for an i8.
+		// Using 0b11111111 as i8 gives a compiler warning claiming out of range for an i8.
 		// IMHO, the warning is wrong, since that bit pattern is a valid i8 and the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3868,7 +4580,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
