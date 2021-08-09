@@ -17,7 +17,7 @@
 //! 
 //! # Version
 //! 
-//! 1.0.0
+//! 1.0.1
 //! 
 //! ## Example 1: 
 //! 
@@ -154,7 +154,7 @@ impl TypeInfo for i64 { fn type_of(&self) -> &'static str {"i64"} }
 impl TypeInfo for f32 { fn type_of(&self) -> &'static str {"f32"} }
 impl TypeInfo for f64 { fn type_of(&self) -> &'static str {"f64"} }
 
-/// A trait to find out if a varibale type is signed or unsigned for integer types.
+/// A trait to find out if a variable type is signed or unsigned for integer types.
 pub trait SignedInfo{
 	/// Returns true if the variable is signed.
 	fn is_signed(&self) -> bool;
@@ -169,7 +169,7 @@ impl SignedInfo for i16 { fn is_signed(&self) -> bool { true  } }
 impl SignedInfo for i32 { fn is_signed(&self) -> bool { true  } }
 impl SignedInfo for i64 { fn is_signed(&self) -> bool { true  } }
 
-// Convinience macro to shorten String::from("hello") to s!("hello")
+// Convenience macro to shorten String::from("hello") to s!("hello")
 macro_rules! s {
 	( $x:expr ) => { String::from($x); };
 }
@@ -195,7 +195,7 @@ macro_rules! check_range {
 
 /// How many bits does it take to write an unsigned integer?
 pub fn n_required_bits_for_an_unsigned_int(num: u64) -> u32 {
-	// TODO: The performance can be probaly improved by a clever lookup strategy
+	// TODO: The performance can be probably improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.log2();
 	if j > 0_f64 {
@@ -206,7 +206,7 @@ pub fn n_required_bits_for_an_unsigned_int(num: u64) -> u32 {
 
 /// How many bits does it take to write a signed integer?
 pub fn n_required_bits_for_a_signed_int(num: i64) -> u32 {
-	// TODO: The performance can be probaly improved by a clever lookup strategy
+	// TODO: The performance can be probably improved by a clever lookup strategy
 	let i = num as f64;
 	let j = i.abs().log2();
 	if j > 0_f64 {
@@ -844,7 +844,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				if bit_offset_copy + length <= 8 {
 					let mut copy: u8 = self[byte_offset_copy as usize];
 					// Assume that the data is given in big endian and
-					// convert it to whatever endiannes we have on the users machine
+					// convert it to whatever endianness we have on the users machine
 					copy = u8::from_be(copy);
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
@@ -896,7 +896,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				if bit_offset_copy + length <= 8 {
 					let mut copy: i8 = self[byte_offset_copy as usize] as i8;
 					// Assume that the data is given in big endian and
-					// convert it to whatever endiannes we have on the users machine
+					// convert it to whatever endianness we have on the users machine
 					copy = i8::from_be(copy);
 					// Lets clear the bits on both sides of the range of bits of interest
 					// First clear the ones on the left side
@@ -963,8 +963,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as u16;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as u16;
@@ -984,7 +984,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1043,8 +1043,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as i16;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as i16;
@@ -1064,7 +1064,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1123,8 +1123,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1145,7 +1145,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1169,7 +1169,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 24;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u32;
@@ -1196,7 +1196,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as u64;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 32;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as u64;
@@ -1261,8 +1261,8 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 				} else if bit_offset_copy + length <= 16 {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
-					// This is the most significant byte. SO move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// This is the most significant byte. So move it to the left
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 8;
 
 					let copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1283,7 +1283,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 16;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1307,7 +1307,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i32;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 24;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i32;
@@ -1334,7 +1334,7 @@ impl ExtractBitsFromVecU8 for Vec<u8> {
 					let mut copy1 = self[byte_offset_copy as usize] as i64;
 
 					// This is the most significant byte. So move it to the left
-					// NOTE: The byte order should be OK for both big and little endians
+					// NOTE: The byte order should be OK for both big and little endian
 					copy1 <<= 32;
 
 					let mut copy2 = self[byte_offset_copy as usize + 1] as i64;
@@ -1389,7 +1389,7 @@ pub trait SingleBits {
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
 	fn get_bit(self, bit_offset: u32) -> Result<bool>;
 
-	/// Clears a single bit and then returns a Result Object, which contains the modified varibale
+	/// Clears a single bit and then returns a Result Object, which contains the modified variable
 	///
 	/// Parameters:
 	///
@@ -1953,7 +1953,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn test_number_of_bits_required_for_an_unsinged_integer() {
+	fn test_number_of_bits_required_for_an_unsigned_integer() {
 		assert_eq!(n_required_bits_for_an_unsigned_int(0), 1);
 		assert_eq!(n_required_bits_for_an_unsigned_int(1), 1);
 		assert_eq!(n_required_bits_for_an_unsigned_int(2), 2);
@@ -2384,7 +2384,7 @@ mod tests {
 			Err(e) => assert_eq!(e, OUT_OF_RANGE_MSG),
 		}
 
-		// Even if all three parametrs are individually within their range,
+		// Even if all three parameters are individually within their range,
 		// the combination might leak outside the vector
 		match v.get_u16(4, 7, 10) {
 			Ok(_) => panic!("The range check failed to detect invalid range"),
@@ -2398,7 +2398,7 @@ mod tests {
 		// The variable bindings below are not mutable, so
 		// the compiler would not compile this file in the first place, if
 		// there was a problem with that.
-		// Still let's keep them in the unit tetst for the better understanding.
+		// Still let's keep them in the unit tests for better understanding.
 
 		let a: u8 = 0x05;
 		let _b = a.get_u16(3, 4).unwrap();
@@ -3007,7 +3007,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3074,7 +3074,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3145,7 +3145,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3216,7 +3216,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i8 = -2;
 		assert_eq!(  0b1111_1110 as u8 as i8, b);
@@ -3277,7 +3277,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3329,7 +3329,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3384,7 +3384,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3439,7 +3439,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i16 = -2;
 		assert_eq!(  0b1111_1111_1111_1110 as u16 as i16, b);
@@ -3492,7 +3492,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3544,7 +3544,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3599,7 +3599,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3654,7 +3654,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i32 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1110 as u32 as i32, b);
@@ -3706,7 +3706,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3758,7 +3758,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3810,10 +3810,10 @@ mod tests {
 		assert_eq!(a.set(5, 2, b).unwrap(), 0b0000_0100_0110_0011_0000_0000_0000_0000);
 
 		// b as negative signed integer
-		// Using 0b11111111 as i8 gives a comiler warning claiming out of range for an i8.
+		// Using 0b11111111 as i8 gives a compiler warning claiming out of range for an i8.
 		// IMHO, the warning is wrong, since that bit pattern is a valid i8 and the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);
@@ -3868,7 +3868,7 @@ mod tests {
 		// Using 0b11111111 as i8 gives a warning claiming out of range for a i8.
 		// IMHO, the warning is wrong, since the actual result is what I expect.
 		// Using 'as u64 as i64' below is a workaround to prevent that warning.
-		// This is successfully supressing the warning, but the logic behind it seems to be inconsistent to me.
+		// This is successfully suppressing the warning, but the logic behind it seems to be inconsistent to me.
 		// See the (currently open) discussion at https://github.com/rust-lang/rust/issues/48073
 		let b : i64 = -2;
 		assert_eq!(  0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110 as u64 as i64, b);

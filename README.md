@@ -16,7 +16,7 @@ This crate is published at [crates.io](https://crates.io/crates/bitlab). The det
 
 # Version
 
-1.0.0
+1.0.1
 
 ## Example 1: 
 
@@ -87,7 +87,7 @@ assert_eq!(v[3], 0b1110_1100);
 
 ## Example 6:
 
-There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the folloeing in the command line
+There is a very simple application in the examples directory, which extracts the color resolution from a real gif file. To run it enter the following in the command line
 
 ```
 cargo run --release --example gif
