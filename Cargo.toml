@@ -17,4 +17,7 @@ travis-ci = { repository = "kkayal/bitlab", branch = "master" }
 maintenance = { status = "passively-maintained" }
 
 [dependencies]
-num = "0.1"
+num = "0.3.0"
+
+[features]
+no_std = [] # feature has no explicit dependencies

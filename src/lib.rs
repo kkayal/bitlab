@@ -122,8 +122,14 @@
 #![warn(missing_docs)]
 
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-	html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-	html_root_url = "https://doc.rust-lang.org/")]
+html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+html_root_url = "https://doc.rust-lang.org/")]
+
+//#![no_std]
+
+// #[cfg(not(feature = "no_std"))]
+// #[macro_use]
+// extern crate alloc;
 
 extern crate num;
 
@@ -134,9 +140,9 @@ static LEN_ZERO: &str = "The length parameter must not be zero";
 // Result-type-alias-idiom
 // Source https://doc.rust-lang.org/book/first-edition/error-handling.html#the-result-type-alias-idiom
 // Shortens the return type in function signatures
-type Result<T> = std::result::Result<T, String>;
+type Result<T> = core::result::Result<T, String>;
 
-/// A trait to get the data type as a string for a integer and floating point types.
+/// A trait to get the data type as a string for integer and floating point types.
 pub trait TypeInfo {
 	// Thanks to https://stackoverflow.com/questions/21747136/how-do-i-print-the-type-of-a-variable-in-rust
 	/// Returns the variable type as a string 
@@ -176,7 +182,7 @@ macro_rules! s {
 
 macro_rules! check_max_bit_offset {
 	( $x:expr ) => {
-		if $x > ( std::mem::size_of::<Self>() as u32 * 8 - 1 ) as u32 {
+		if $x > ( core::mem::size_of::<Self>() as u32 * 8 - 1 ) as u32 {
 			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 	}
@@ -187,7 +193,7 @@ macro_rules! check_range {
 		if $length == 0 {
 			return Err(s!(LEN_ZERO));
 		}
-		if $bit_offset + $length > std::mem::size_of::<Self>() as u32 * 8 {
+		if $bit_offset + $length > core::mem::size_of::<Self>() as u32 * 8 {
 			return Err(s!(OUT_OF_RANGE_MSG));
 		}
 	}
@@ -1377,7 +1383,7 @@ pub trait SingleBits {
 	/// Parameters:
 	///
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized;
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized;
 
 	/// Tests a single bit and returns true or false in a Result object
 	///
@@ -1394,11 +1400,11 @@ pub trait SingleBits {
 	/// Parameters:
 	///
 	/// - **bit_offset** (u32) the offset of the bit to be set. Zero is the **MOST** significant bit.
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized;
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized;
 }
 
 impl SingleBits for u8 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1430,7 +1436,7 @@ impl SingleBits for u8 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
@@ -1446,7 +1452,7 @@ impl SingleBits for u8 {
 }
 
 impl SingleBits for i8 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u8 = 0b1000_0000; // Only the most significant bit is set.
@@ -1478,7 +1484,7 @@ impl SingleBits for i8 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u8 = 0b0111_1111; // Only the most significant bit is clear.
@@ -1494,7 +1500,7 @@ impl SingleBits for i8 {
 }
 
 impl SingleBits for u16 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1526,7 +1532,7 @@ impl SingleBits for u16 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1542,7 +1548,7 @@ impl SingleBits for u16 {
 }
 
 impl SingleBits for i16 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u16 = 0b1000_0000_0000_0000; // Only the most significant bit is set.
@@ -1574,7 +1580,7 @@ impl SingleBits for i16 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u16 = 0b0111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1590,7 +1596,7 @@ impl SingleBits for i16 {
 }
 
 impl SingleBits for u32 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1622,7 +1628,7 @@ impl SingleBits for u32 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1638,7 +1644,7 @@ impl SingleBits for u32 {
 }
 
 impl SingleBits for i32 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u32 = 0b1000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1670,7 +1676,7 @@ impl SingleBits for i32 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u32 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1686,7 +1692,7 @@ impl SingleBits for i32 {
 }
 
 impl SingleBits for u64 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1718,7 +1724,7 @@ impl SingleBits for u64 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1734,7 +1740,7 @@ impl SingleBits for u64 {
 }
 
 impl SingleBits for i64 {
-	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn set_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let mut a : u64 = 0b1000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000; // Only the most significant bit is set.
@@ -1766,7 +1772,7 @@ impl SingleBits for i64 {
 		}
 	}
 
-	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: std::marker::Sized {
+	fn clear_bit(self, bit_offset: u32) -> Result<Self> where Self: core::marker::Sized {
 		check_max_bit_offset!(bit_offset);
 
 		let a : u64 = 0b0111_1111_1111_1111_1111_1111_1111_1111; // Only the most significant bit is clear.
@@ -1790,26 +1796,26 @@ pub trait InsertIntoSizedIntegerTypes {
 	/// - **length** (u32) the number of bits to be extracted (at the least significant side).
 	/// - **value** (Any sized integer type) the value to be inserted.
 	fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<Self>
-		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		where Self: core::marker::Sized, T: core::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
 		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
 		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
-		T : std::string::ToString;
+		T: std::string::ToString;
 }
 
 // The first parameter ($t) is the variable type to be inserted ($t)
 macro_rules! def_set_fn {
 	($t:ty) => (
 		fn set<T>(self, bit_offset: u32, length: u32, value: T) -> Result<Self>
-		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		where Self: core::marker::Sized, T: core::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
 		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
 		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
-		T : std::string::ToString {
+		T: std::string::ToString {
 			// Range checks
-			if length > std::mem::size_of::<Self>() as u32 * 8 {
+			if length > core::mem::size_of::<Self>() as u32 * 8 {
 				return Err(s!(LEN_TOO_BIG_MSG) + TypeInfo::type_of(&self));
 			}
 
@@ -1833,7 +1839,7 @@ macro_rules! def_set_fn {
 
 			// makes sure that value_copy has the same size by type casting to Self
 			let mut value_copy : Self = value.as_();
-			let shift = std::mem::size_of_val(&value_copy) as u8 * 8 - (bit_offset + length) as u8;
+			let shift = core::mem::size_of_val(&value_copy) as u8 * 8 - (bit_offset + length) as u8;
 			value_copy <<= shift;
 
 			for i in bit_offset .. bit_offset + length {
@@ -1869,22 +1875,22 @@ pub trait InsertBitsIntoVecU8 {
 	/// - **length** (u32) the number of bits to be inserted.
 	/// - **value** (u32) the value to be inserted.
 	fn set<T>(&mut self, byte_offset: u32, bit_offset: u32, length: u32, value: T) -> Result<()>
-		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		where Self: core::marker::Sized, T: core::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
 		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
 		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
-		T : std::string::ToString, T: SingleBits + Copy;
+		T: std::string::ToString, T: SingleBits + Copy;
 }
 
 impl InsertBitsIntoVecU8 for Vec<u8> {
 	fn set<T>(&mut self, byte_offset: u32, bit_offset: u32, length: u32, value: T) -> Result<()>
-		where Self: std::marker::Sized, T: std::marker::Sized, T: SignedInfo,
+		where Self: core::marker::Sized, T: core::marker::Sized, T: SignedInfo,
 		T: num::cast::AsPrimitive<u8>, T: num::cast::AsPrimitive<i8>,
 		T: num::cast::AsPrimitive<u16>, T: num::cast::AsPrimitive<i16>,
 		T: num::cast::AsPrimitive<u32>, T: num::cast::AsPrimitive<i32>,
 		T: num::cast::AsPrimitive<u64>, T: num::cast::AsPrimitive<i64>,
-		T : std::string::ToString, T: SingleBits + Copy {
+		T: std::string::ToString, T: SingleBits + Copy {
 
 		// Range checks
 		if length == 0 { return Err(s!(LEN_ZERO)); };
@@ -1914,7 +1920,7 @@ impl InsertBitsIntoVecU8 for Vec<u8> {
 		// 2. For each relevant bit in the copy, set or clear the relevant bits (bit by bit)
 		// 3. Replace the oríginal byte in the vector with the modified copy
 		let mut bit_counter = length;
-		let mut read_bit_index = std::mem::size_of::<T>() as u32 * 8 - length;
+		let mut read_bit_index = core::mem::size_of::<T>() as u32 * 8 - length;
 		let mut write_bit_index = bit_offset % 8;
 
 		for byte_index in first_relevant_byte_index .. last_relevant_byte_index + 1 {
