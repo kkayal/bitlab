@@ -171,7 +171,7 @@ impl SignedInfo for i64 { fn is_signed(&self) -> bool { true  } }
 
 // Convenience macro to shorten String::from("hello") to s!("hello")
 macro_rules! s {
-	( $x:expr ) => { String::from($x); };
+	( $x:expr ) => { String::from($x) };
 }
 
 macro_rules! check_max_bit_offset {
